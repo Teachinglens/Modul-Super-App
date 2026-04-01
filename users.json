@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "email": "admin@guruai.id",
+    "password": "admin123",
+    "name": "Admin Modul Super App",
+    "role": "admin",
+    "package": "premium",
+    "downloadCount": 0
+  },
+  {
+    "id": "2",
+    "email": "guru@sekolah.id",
+    "password": "guru123",
+    "name": "Bapak Guru",
+    "role": "user",
+    "package": "basic",
+    "downloadCount": 0
+  },
+  {
+    "id": "3",
+    "email": "mahardikasandy1992@gmail.com",
+    "password": "modulsuperapp",
+    "name": "Mahardika Sandy",
+    "role": "admin",
+    "package": "premium",
+    "downloadCount": 1
+  },
+  {
+    "id": "U-1774943269962",
+    "email": "barlimahardikasandy@gmail.com",
+    "password": "l2gh4o",
+    "name": "Barli Mahardika Sandy, S,Pd",
+    "role": "user",
+    "package": "premium",
+    "downloadCount": 3
+  }
+]
