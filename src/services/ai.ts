@@ -18,9 +18,23 @@ export const suggestTopics = async (subject: string, level: string, phase: strin
   return JSON.parse(response.text);
 };
 
-export const suggestObjectives = async (subject: string, topic: string, level: string, phase: string) => {
+export const suggestObjectives = async (
+  subject: string, 
+  topic: string, 
+  level: string, 
+  phase: string,
+  learningModel: string,
+  applyLoveCurriculum: boolean
+) => {
   const model = "gemini-3-flash-preview";
-  const prompt = `Berikan 3 saran Tujuan Pembelajaran (TP) yang sesuai dengan kaidah ABCD (Audience, Behavior, Condition, Degree) untuk mata pelajaran ${subject}, topik ${topic}, jenjang ${level} Fase ${phase}. Berikan dalam format JSON array of strings.`;
+  const loveContext = applyLoveCurriculum 
+    ? "Sertakan juga pendekatan Kurikulum Berbasis Cinta (nilai kasih sayang, empati, humanis)." 
+    : "";
+    
+  const prompt = `Berikan 3 saran Tujuan Pembelajaran (TP) yang sesuai dengan kaidah ABCD (Audience, Behavior, Condition, Degree) untuk mata pelajaran ${subject}, topik ${topic}, jenjang ${level} Fase ${phase}. 
+Gunakan Model Pembelajaran: ${learningModel}.
+${loveContext}
+Berikan dalam format JSON array of strings.`;
   
   const response = await ai.models.generateContent({
     model,

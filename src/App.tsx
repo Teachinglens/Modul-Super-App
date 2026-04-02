@@ -758,7 +758,14 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     }
     setIsSuggestingObjectives(true);
     try {
-      const objectives = await suggestObjectives(formData.subject, formData.topic, formData.level, formData.phase);
+      const objectives = await suggestObjectives(
+        formData.subject, 
+        formData.topic, 
+        formData.level, 
+        formData.phase,
+        formData.model,
+        formData.applyLoveCurriculum
+      );
       setSuggestedObjectives(objectives);
     } catch (err) {
       alert("Gagal mendapatkan saran tujuan pembelajaran.");
@@ -1263,6 +1270,34 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                           </div>
                         </label>
                       </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-700">Model Pembelajaran</label>
+                          <select
+                            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={formData.model}
+                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                          >
+                            <option>Problem Based Learning (PBL)</option>
+                            <option>Project Based Learning (PjBL)</option>
+                            <option>Discovery Learning</option>
+                            <option>Inquiry Learning</option>
+                            <option>Contextual Teaching and Learning (CTL)</option>
+                            <option>Cooperative Learning</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-700">Alokasi Waktu</label>
+                          <input
+                            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Contoh: 2 x 35 Menit"
+                            value={formData.allocation}
+                            onChange={(e) => setFormData({ ...formData, allocation: e.target.value })}
+                          />
+                          {!formData.allocation && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                        </div>
+                      </div>
                     </div>
 
                   <div className="space-y-4">
@@ -1337,34 +1372,6 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       onChange={(e) => setFormData({ ...formData, learningObjectives: e.target.value })}
                     />
                     {!formData.learningObjectives && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Model Pembelajaran</label>
-                      <select
-                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={formData.model}
-                        onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                      >
-                        <option>Problem Based Learning (PBL)</option>
-                        <option>Project Based Learning (PjBL)</option>
-                        <option>Discovery Learning</option>
-                        <option>Inquiry Learning</option>
-                        <option>Contextual Teaching and Learning (CTL)</option>
-                        <option>Cooperative Learning</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Alokasi Waktu</label>
-                      <input
-                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                        placeholder="Contoh: 2 x 35 Menit"
-                        value={formData.allocation}
-                        onChange={(e) => setFormData({ ...formData, allocation: e.target.value })}
-                      />
-                      {!formData.allocation && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
-                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -1462,37 +1469,45 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   <section className="mb-8">
                     <div className="bg-slate-50 p-4 md:p-6 rounded-xl border border-slate-100">
                       <div className="space-y-2 text-sm md:text-base">
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Nama Guru</span>
-                          <span>: {formData.teacherName}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Nama Guru</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.teacherName}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">NIP</span>
-                          <span>: {formData.nip || "-"}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">NIP</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.nip || "-"}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Nama Sekolah</span>
-                          <span>: {formData.schoolName}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Nama Sekolah</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.schoolName}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Mata Pelajaran</span>
-                          <span>: {formData.subject}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Mata Pelajaran</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.subject}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Kelas / Fase</span>
-                          <span>: {formData.className} / {formData.phase}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Kelas / Fase</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.className} / {formData.phase}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Materi Pokok</span>
-                          <span>: {formData.topic}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Materi Pokok</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.topic}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Alokasi Waktu</span>
-                          <span>: {formData.allocation}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Alokasi Waktu</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.allocation}</span>
                         </div>
-                        <div className="flex gap-4">
-                          <span className="font-bold w-40">Tahun Pelajaran</span>
-                          <span>: {formData.year}</span>
+                        <div className="flex gap-2">
+                          <span className="font-bold w-32 md:w-40 shrink-0">Tahun Pelajaran</span>
+                          <span className="shrink-0">:</span>
+                          <span className="flex-1">{formData.year}</span>
                         </div>
                       </div>
                     </div>
