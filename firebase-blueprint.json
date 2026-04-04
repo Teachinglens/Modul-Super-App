@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and subscription data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "package": { "type": "string", "enum": ["basic", "premium"] },
+        "downloadCount": { "type": "integer" }
+      },
+      "required": ["id", "email", "name"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "Generated teaching module data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "data": { "$ref": "ModuleData" },
+        "generated": { "$ref": "GeneratedModule" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "data", "generated", "createdAt"]
+    },
+    "ModuleData": {
+      "title": "ModuleData",
+      "description": "Input data for module generation",
+      "type": "object",
+      "properties": {
+        "teacherName": { "type": "string" },
+        "nip": { "type": "string" },
+        "subject": { "type": "string" },
+        "level": { "type": "string" },
+        "className": { "type": "string" },
+        "phase": { "type": "string" },
+        "year": { "type": "string" },
+        "topic": { "type": "string" },
+        "learningObjectives": { "type": "string" },
+        "model": { "type": "string" },
+        "characters": { "type": "array", "items": { "type": "string" } },
+        "schoolName": { "type": "string" },
+        "allocation": { "type": "string" },
+        "applyLoveCurriculum": { "type": "boolean" }
+      }
+    },
+    "GeneratedModule": {
+      "title": "GeneratedModule",
+      "description": "The AI generated content of the module",
+      "type": "object",
+      "properties": {
+        "identitas": { "type": "string" },
+        "profilPancasila": { "type": "string" },
+        "saranaPrasarana": { "type": "string" },
+        "targetPesertaDidik": { "type": "string" },
+        "modelMetode": { "type": "string" },
+        "tujuanPembelajaran": { "type": "string" },
+        "pemahamanBermakna": { "type": "string" },
+        "pertanyaanPemantik": { "type": "string" },
+        "kegiatanPembelajaran": { "type": "string" },
+        "asesmenDiagnostik": { "type": "string" },
+        "asesmenFormatif": { "type": "string" },
+        "asesmenSumatif": { "type": "string" },
+        "pengayaanRemedial": { "type": "string" },
+        "refleksi": { "type": "string" },
+        "lampiran": { "type": "string" },
+        "lkpd": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document"
+    },
+    "/users/{userId}/modules/{moduleId}": {
+      "schema": "Module",
+      "description": "User's generated modules"
+    }
+  }
+}

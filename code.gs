@@ -26,7 +26,7 @@ function doGet() {
 
 function apiLogin(email, password) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('User');
   var rows = sheet.getDataRange().getValues();
   
   for (var i = 1; i < rows.length; i++) {
@@ -47,34 +47,59 @@ function apiLogin(email, password) {
   return { success: false, message: "Email atau password salah" };
 }
 
-function apiRegister(data) {
+function apiValidateCode(kode) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('Codes');
+  if (!sheet) return { success: false, message: "Sheet Codes tidak ditemukan." };
+  
   var rows = sheet.getDataRange().getValues();
+  var inputKode = (kode || "").toUpperCase();
   
   for (var i = 1; i < rows.length; i++) {
-    if (rows[i][1] === data.email) {
+    if (rows[i][0].toString().toUpperCase() === inputKode && rows[i][1].toString().toLowerCase() === 'active') {
+      return { success: true };
+    }
+  }
+  return { success: false, message: "Kode aktivasi tidak valid atau sudah tidak aktif." };
+}
+
+function apiRegister(data) {
+  var ss = getDatabaseSpreadsheet();
+  var userSheet = ss.getSheetByName('User');
+  var userRows = userSheet.getDataRange().getValues();
+  
+  for (var i = 1; i < userRows.length; i++) {
+    if (userRows[i][1] === data.email) {
       return { success: false, message: "Email sudah terdaftar." };
     }
   }
   
-  var validCodes = ['SUPER2024', 'GURUAI', 'PROMO2024'];
+  var validation = apiValidateCode(data.kode);
+  if (!validation.success) return validation;
+  
+  // Update Usage Count in Codes sheet
+  var codeSheet = ss.getSheetByName('Codes');
+  var codeRows = codeSheet.getDataRange().getValues();
   var inputKode = (data.kode || "").toUpperCase();
-  if (validCodes.indexOf(inputKode) === -1) {
-    return { success: false, message: "Kode aktivasi tidak valid." };
+  for (var j = 1; j < codeRows.length; j++) {
+    if (codeRows[j][0].toString().toUpperCase() === inputKode) {
+      var currentUsage = parseInt(codeRows[j][2] || 0);
+      codeSheet.getRange(j + 1, 3).setValue(currentUsage + 1);
+      break;
+    }
   }
   
-  var password = Math.random().toString(36).slice(-8);
-  var userId = "U-" + new Date().getTime();
+  var password = data.password || Math.random().toString(36).slice(-8);
+  var userId = data.id || ("U-" + new Date().getTime());
   
-  sheet.appendRow([userId, data.email, password, data.nama, 'user', data.nip, 'basic', 0]);
+  userSheet.appendRow([userId, data.email, password, data.nama, 'user', data.nip, 'basic', 0, inputKode]);
   
-  return { success: true, password: password };
+  return { success: true, password: password, id: userId };
 }
 
 function apiGetUsers() {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('User');
   var rows = sheet.getDataRange().getValues();
   var users = [];
   
@@ -95,19 +120,29 @@ function apiGetUsers() {
 
 function apiAddUser(data) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
-  sheet.appendRow([data.id, data.email, data.password, data.name, data.role, data.nip || "", data.package || "basic", data.downloadCount || 0]);
+  var sheet = ss.getSheetByName('User');
+  sheet.appendRow([data.id, data.email, data.password, data.name, data.role, data.nip || "", data.package || "basic", data.downloadCount || 0, data.kode || ""]);
   return { success: true };
 }
 
 function apiUpdateUser(data) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('User');
   var rows = sheet.getDataRange().getValues();
   
   for (var i = 1; i < rows.length; i++) {
     if (rows[i][0] == data.id) {
-      sheet.getRange(i + 1, 1, 1, 8).setValues([[data.id, data.email, data.password || rows[i][2], data.name, data.role, data.nip || rows[i][5], data.package || rows[i][6], data.downloadCount || rows[i][7]]]);
+      sheet.getRange(i + 1, 1, 1, 9).setValues([[
+        data.id, 
+        data.email, 
+        data.password || rows[i][2], 
+        data.name, 
+        data.role, 
+        data.nip || rows[i][5], 
+        data.package || rows[i][6], 
+        data.downloadCount || rows[i][7],
+        data.kode || rows[i][8] || ""
+      ]]);
       return { success: true };
     }
   }
@@ -116,7 +151,7 @@ function apiUpdateUser(data) {
 
 function apiDeleteUser(id) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('User');
   var rows = sheet.getDataRange().getValues();
   
   for (var i = 1; i < rows.length; i++) {
@@ -149,7 +184,7 @@ function apiSaveModule(data) {
 
 function apiIncrementDownload(userId) {
   var ss = getDatabaseSpreadsheet();
-  var sheet = ss.getSheetByName('Users');
+  var sheet = ss.getSheetByName('User');
   var rows = sheet.getDataRange().getValues();
   
   for (var i = 1; i < rows.length; i++) {
@@ -177,14 +212,28 @@ function setupDatabase() {
   // Simpan ID spreadsheet ke PropertiesService agar bisa diakses oleh doPost
   PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', ss.getId());
   
-  // Sheet Users
-  var userSheet = ss.getSheetByName('Users');
+  // Sheet User
+  var userSheet = ss.getSheetByName('User');
   if (!userSheet) {
-    userSheet = ss.insertSheet('Users');
+    userSheet = ss.insertSheet('User');
   }
-  // Menambahkan kolom: ID, Email, Password, Name, Role, NIP, Package, DownloadCount
-  userSheet.getRange(1, 1, 1, 8).setValues([['ID', 'Email', 'Password', 'Name', 'Role', 'NIP', 'Package', 'DownloadCount']]);
+  // Menambahkan kolom: ID, Email, Password, Name, Role, NIP, Package, DownloadCount, ActivationCode
+  userSheet.getRange(1, 1, 1, 9).setValues([['ID', 'Email', 'Password', 'Name', 'Role', 'NIP', 'Package', 'DownloadCount', 'ActivationCode']]);
   userSheet.setFrozenRows(1);
+  
+  // Sheet Codes (Aktivasi)
+  var codeSheet = ss.getSheetByName('Codes');
+  if (!codeSheet) {
+    codeSheet = ss.insertSheet('Codes');
+  }
+  codeSheet.getRange(1, 1, 1, 3).setValues([['Code', 'Status', 'UsageCount']]);
+  // Tambahkan beberapa kode awal jika kosong
+  if (codeSheet.getLastRow() === 1) {
+    codeSheet.appendRow(['SUPER2024', 'Active', 0]);
+    codeSheet.appendRow(['GURUAI', 'Active', 0]);
+    codeSheet.appendRow(['PROMO2024', 'Active', 0]);
+  }
+  codeSheet.setFrozenRows(1);
   
   // Sheet Modules
   var moduleSheet = ss.getSheetByName('Modules');
@@ -203,7 +252,7 @@ function setupDatabase() {
   }
   
   try {
-    SpreadsheetApp.getUi().alert('Database Modul Super App berhasil disiapkan!');
+    SpreadsheetApp.getUi().alert('Database Modul Super App berhasil disiapkan! Sheet User, Codes, dan Modules telah dibuat.');
   } catch (e) {
     // getUi() akan error jika dijalankan dari editor script, jadi kita log saja
     Logger.log('Database Modul Super App berhasil disiapkan! ID Spreadsheet: ' + ss.getId());
@@ -233,39 +282,22 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var ss = getDatabaseSpreadsheet();
     
+    // Handle Validation
+    if (data.action === 'validate') {
+      return ContentService.createTextOutput(JSON.stringify(apiValidateCode(data.kode)))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // Handle Registration
     if (data.action === 'register') {
-      var sheet = ss.getSheetByName('Users');
-      var rows = sheet.getDataRange().getValues();
-      
-      // Cek apakah email sudah ada
-      for (var i = 1; i < rows.length; i++) {
-        if (rows[i][1] === data.email) {
-          return ContentService.createTextOutput(JSON.stringify({ "success": false, "message": "Email sudah terdaftar." }))
-            .setMimeType(ContentService.MimeType.JSON);
-        }
-      }
-      
-      // Validasi Kode (Bisa disesuaikan)
-      var validCodes = ['SUPER2024', 'GURUAI', 'PROMO2024'];
-      var inputKode = (data.kode || "").toUpperCase();
-      if (validCodes.indexOf(inputKode) === -1) {
-        return ContentService.createTextOutput(JSON.stringify({ "success": false, "message": "Kode aktivasi tidak valid." }))
-          .setMimeType(ContentService.MimeType.JSON);
-      }
-      
-      var password = Math.random().toString(36).slice(-8);
-      var userId = "U-" + new Date().getTime();
-      
-      sheet.appendRow([userId, data.email, password, data.nama, 'user', data.nip, 'basic', 0]);
-      
-      return ContentService.createTextOutput(JSON.stringify({ "success": true, "password": password }))
+      var result = apiRegister(data);
+      return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
     // Handle User Management (Admin)
     if (data.type === 'user') {
-      var sheet = ss.getSheetByName('Users');
+      var sheet = ss.getSheetByName('User');
       if (data.action === 'add') {
         sheet.appendRow([data.id, data.email, data.password, data.name, data.role, data.nip || "", data.package || "basic", data.downloadCount || 0]);
       } else if (data.action === 'update') {

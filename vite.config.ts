@@ -17,9 +17,13 @@ const removeModuleTypePlugin = () => {
           if (chunk.type === 'asset' && typeof chunk.source === 'string') {
             // Wrap inline script content in <!-- --> to protect from GAS XML parser
             // Only match the script tag injected by Vite to avoid matching strings in JS
-            chunk.source = chunk.source.replace(/<script type="module" crossorigin>([\s\S]*?)<\/script>/g, '<script type="module">\n/*<!--*/\n$1\n/*-->*/\n</script>');
-            // Also remove type="module" crossorigin if it wasn't matched above (e.g. empty script)
-            chunk.source = chunk.source.replace(/<script type="module" crossorigin/g, '<script type="module"');
+            chunk.source = chunk.source.replace(/<script type="module" crossorigin>([\s\S]*?)<\/script>/g, '<script>\n/*<!--*/\n$1\n/*-->*/\n</script>');
+            // Also handle cases where crossorigin might be missing or in different order
+            chunk.source = chunk.source.replace(/<script type="module">([\s\S]*?)<\/script>/g, '<script>\n/*<!--*/\n$1\n/*-->*/\n</script>');
+            // Remove any remaining type="module" or crossorigin from script tags
+            chunk.source = chunk.source.replace(/<script type="module" crossorigin/g, '<script');
+            chunk.source = chunk.source.replace(/<script type="module"/g, '<script');
+            chunk.source = chunk.source.replace(/ crossorigin/g, '');
             // We do not wrap <style> tags because GAS XML parser handles CSS fine,
             // and wrapping it with regex can corrupt the file if the JS contains "<style>" strings.
           }
@@ -29,17 +33,40 @@ const removeModuleTypePlugin = () => {
   };
 };
 
+// Plugin to inject CDN links only in production
+const injectCdnPlugin = () => {
+  return {
+    name: 'inject-cdn',
+    transformIndexHtml(html: string, ctx: any) {
+      if (ctx.bundle) {
+        const cdnLinks = `
+    <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
+    <script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        `;
+        return html.replace('<!-- CDN_LINKS -->', cdnLinks);
+      }
+      return html.replace('<!-- CDN_LINKS -->', '');
+    }
+  };
+};
+
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss(), viteSingleFile(), removeModuleTypePlugin()],
+    plugins: [react(), tailwindcss(), viteSingleFile(), removeModuleTypePlugin(), injectCdnPlugin()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
     build: {
       minify: true, // Re-enable minification to reduce file size below GAS limits
       rollupOptions: {
-        external: ['html2pdf.js', 'jspdf', 'html2canvas', 'react', 'react-dom', 'lucide-react', 'motion'],
+        external: ['html2pdf.js', 'jspdf', 'html2canvas', 'react', 'react-dom', 'lucide-react', 'motion/react', 'framer-motion'],
         output: {
           globals: {
             'html2pdf.js': 'html2pdf',
@@ -47,8 +74,9 @@ export default defineConfig(({mode}) => {
             'html2canvas': 'html2canvas',
             'react': 'React',
             'react-dom': 'ReactDOM',
-            'lucide-react': 'lucide',
-            'motion': 'Motion'
+            'lucide-react': 'LucideReact',
+            'motion/react': 'Motion',
+            'framer-motion': 'Motion'
           }
         }
       }

@@ -1,0 +1,124 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {userId}
+// Fields:
+//   - id: string (required) - User's unique ID
+//   - email: string (required, format: email) - User's email address
+//   - name: string (required) - User's full name
+//   - role: string (optional, enum: ['admin', 'user']) - User's role
+//   - package: string (optional, enum: ['basic', 'premium']) - Subscription package
+//   - downloadCount: number (optional) - Number of downloads used
+//
+// Collection: modules
+// Document ID: {moduleId}
+// Fields:
+//   - userId: string (required) - Owner's user ID
+//   - subject: string (required) - Subject name
+//   - level: string (required) - Education level
+//   - topic: string (required) - Topic
+//   - school: string (optional) - School name
+//   - teacher: string (optional) - Teacher name
+//   - location: string (optional) - Location
+//   - date: string (optional) - Date
+//   - principal: string (optional) - Principal name
+//   - content: map (required) - AI generated content
+//   - createdAt: string (required, format: date-time) - Creation timestamp
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "mahardikasandy1992@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.email is string && isValidEmail(data.email) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('role' in data) || data.role in ['admin', 'user']) &&
+             (!('package' in data) || data.package in ['basic', 'premium']) &&
+             (!('downloadCount' in data) || data.downloadCount is number);
+    }
+
+    function isValidModule(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.subject is string && data.subject.size() > 0 &&
+             data.level is string && data.level.size() > 0 &&
+             data.topic is string && data.topic.size() > 0 &&
+             data.content is map &&
+             isValidDateString(data.createdAt);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Users can read their own profile. Admins can read any profile.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Users can create their own profile as 'user' role. Admins can create any profile.
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) &&
+        ((isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role == 'user')) || isAdmin());
+
+      // Users can update their own profile but NOT their role. Admins can update anything.
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) &&
+        ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+    }
+
+    match /modules/{moduleId} {
+      // Users can read their own modules. Admins can read all.
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can create their own modules.
+      allow create: if isAuthenticated() && isValidModule(request.resource.data);
+      
+      // Users can update their own modules.
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && isValidModule(request.resource.data);
+      
+      // Users can delete their own modules. Admins can delete all.
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

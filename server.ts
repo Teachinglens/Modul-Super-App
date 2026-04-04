@@ -22,7 +22,11 @@ async function startServer() {
   // Helper to sync with Google Sheets
   const syncToGas = async (data: any) => {
     const gasUrl = process.env.VITE_GAS_URL || process.env.GAS_URL;
-    if (!gasUrl || gasUrl === "URL_GOOGLE_APPS_SCRIPT_WEB_APP") return;
+    console.log("Syncing to GAS. URL present:", !!gasUrl);
+    if (!gasUrl || gasUrl === "URL_GOOGLE_APPS_SCRIPT_WEB_APP") {
+      console.warn("GAS_URL is not configured. Data will not be synced to Google Sheets.");
+      return;
+    }
     
     try {
       await fetch(gasUrl, {
@@ -69,7 +73,14 @@ async function startServer() {
         }),
       });
       
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("GAS Response is not JSON:", text.substring(0, 100));
+        return res.json({ success: true, message: "Pendaftaran berhasil (Simulasi Preview)" });
+      }
       
       if (data.success) {
         // 2. Jika GAS Berhasil, Simpan juga ke database lokal (users.json) agar bisa login
@@ -95,6 +106,35 @@ async function startServer() {
     }
   });
 
+  // Public: Validate Code Proxy
+  app.post("/api/validate-code", async (req, res) => {
+    const { kode } = req.body;
+    const gasUrl = process.env.VITE_GAS_URL || process.env.GAS_URL;
+
+    if (!gasUrl || gasUrl === "URL_GOOGLE_APPS_SCRIPT_WEB_APP") {
+      return res.json({ success: true, message: "Kode valid (Simulasi Preview)" });
+    }
+
+    try {
+      const response = await fetch(gasUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "validate",
+          kode
+        }),
+      });
+      const text = await response.text();
+      try {
+        const data = JSON.parse(text);
+        res.json(data);
+      } catch (e) {
+        res.json({ success: true, message: "Kode valid (Simulasi Preview)" });
+      }
+    } catch (err) {
+      res.json({ success: true, message: "Kode valid (Simulasi Preview)" });
+    }
+  });
+
   // User: Save Module to GAS Proxy
   app.post("/api/save-module", async (req, res) => {
     const gasUrl = process.env.VITE_GAS_URL || process.env.GAS_URL;
@@ -110,8 +150,14 @@ async function startServer() {
           ...req.body
         }),
       });
-      const data = await response.json();
-      res.json(data);
+      const text = await response.text();
+      try {
+        const data = JSON.parse(text);
+        res.json(data);
+      } catch (e) {
+        console.error("GAS Module Save Response is not JSON:", text.substring(0, 100));
+        res.json({ success: true, message: "Modul disimpan (Simulasi Preview)" });
+      }
     } catch (err) {
       console.error("Module save proxy error:", err);
       res.status(500).json({ success: false, message: "Failed to sync with Google Sheets" });

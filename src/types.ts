@@ -2,9 +2,11 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role?: "admin" | "user";
-  package?: "basic" | "premium";
-  downloadCount?: number;
+  role: "admin" | "user";
+  package: "basic" | "premium";
+  downloadCount: number;
+  password?: string;
+  nip?: string;
 }
 
 export interface ModuleData {
