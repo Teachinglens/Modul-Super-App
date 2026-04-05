@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 // Mock Database (In-memory for demo, but structured for persistence)
-const USERS_FILE = "./users.json";
+const USERS_FILE = path.join(process.cwd(), "users.json");
 if (!fs.existsSync(USERS_FILE)) {
   fs.writeFileSync(USERS_FILE, JSON.stringify([
     { id: "1", email: "admin@guruai.id", password: "admin123", name: "Admin Modul Super App", role: "admin", package: "premium", downloadCount: 0 },
@@ -307,7 +307,13 @@ if (process.env.NODE_ENV === "production" || process.env.VERCEL === "1") {
     if (req.path.startsWith("/api/")) {
       return res.status(404).json({ success: false, message: "API endpoint not found" });
     }
-    res.sendFile(path.join(distPath, "index.html"));
+    // In Vercel, static files are usually handled by the platform, but this is a fallback
+    const indexPath = path.join(distPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send("Frontend build not found. Please run 'npm run build' first.");
+    }
   });
 }
 
