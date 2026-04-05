@@ -2,12 +2,9 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "env": {
-    "NODE_ENV": "production"
-  },
   "functions": {
     "server.ts": {
-      "runtime": "@vercel/node@latest"
+      "runtime": "@vercel/node"
     }
   },
   "routes": [
@@ -17,11 +14,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.html"
+      "dest": "server.ts"
     }
   ]
 }

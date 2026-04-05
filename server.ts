@@ -21,7 +21,7 @@ if (!fs.existsSync(USERS_FILE)) {
 const syncToGas = async (data: any) => {
   const gasUrl = process.env.VITE_GAS_URL || process.env.GAS_URL;
   console.log("Syncing to GAS. URL present:", !!gasUrl);
-  if (!gasUrl || gasUrl === "https://script.google.com/macros/s/AKfycbxgj636T2whmqE3UqD9Fo7tO1Mbiae-ThN6kPkuqfTWJbrfAp3UtkOdG8Yd-fh0RcxdZA/exec") {
+  if (!gasUrl || gasUrl === "URL_GOOGLE_APPS_SCRIPT_WEB_APP") {
     console.warn("GAS_URL is not configured. Data will not be synced to Google Sheets.");
     return;
   }
@@ -295,20 +295,29 @@ app.get("/api/admin/download-html", (req, res) => {
   }
 });
 
-// Vite middleware for development
+// Static file serving and SPA routing
+const distPath = path.join(process.cwd(), "dist");
+
+if (process.env.NODE_ENV === "production" || process.env.VERCEL === "1") {
+  app.use(express.static(distPath));
+  
+  // API routes are already defined above, so this will only catch non-API requests
+  app.get("*", (req, res) => {
+    // Check if it's an API request that wasn't matched
+    if (req.path.startsWith("/api/")) {
+      return res.status(404).json({ success: false, message: "API endpoint not found" });
+    }
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
   }
 
   const PORT = Number(process.env.PORT) || 3000;
@@ -317,7 +326,7 @@ async function startServer() {
   });
 }
 
-// Handle untuk local development
+// Only start the server locally
 if (process.env.VERCEL !== "1") {
   startServer().catch(err => {
     console.error("Failed to start server:", err);
@@ -325,20 +334,5 @@ if (process.env.VERCEL !== "1") {
   });
 }
 
-// Handle untuk Vercel Serverless
-if (process.env.VERCEL === "1") {
-  const distPath = path.join(process.cwd(), "dist");
-  
-  // Serve static files dari dist
-  app.use(express.static(distPath));
-  
-  // Untuk SPA routing: serve index.html untuk semua route yang tidak di-match
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
-  
-  console.log("✅ Vercel Serverless mode activated");
-}
-
-// Export untuk Vercel Serverless Function
+// Export for Vercel
 export default app;
