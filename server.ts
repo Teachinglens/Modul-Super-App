@@ -21,7 +21,7 @@ if (!fs.existsSync(USERS_FILE)) {
 const syncToGas = async (data: any) => {
   const gasUrl = process.env.VITE_GAS_URL || process.env.GAS_URL;
   console.log("Syncing to GAS. URL present:", !!gasUrl);
-  if (!gasUrl || gasUrl === "URL_GOOGLE_APPS_SCRIPT_WEB_APP") {
+  if (!gasUrl || gasUrl === "https://script.google.com/macros/s/AKfycbxgj636T2whmqE3UqD9Fo7tO1Mbiae-ThN6kPkuqfTWJbrfAp3UtkOdG8Yd-fh0RcxdZA/exec") {
     console.warn("GAS_URL is not configured. Data will not be synced to Google Sheets.");
     return;
   }
@@ -317,9 +317,28 @@ async function startServer() {
   });
 }
 
-// Only start the server locally or in non-serverless environments
+// Handle untuk local development
 if (process.env.VERCEL !== "1") {
-  startServer();
+  startServer().catch(err => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
 }
 
+// Handle untuk Vercel Serverless
+if (process.env.VERCEL === "1") {
+  const distPath = path.join(process.cwd(), "dist");
+  
+  // Serve static files dari dist
+  app.use(express.static(distPath));
+  
+  // Untuk SPA routing: serve index.html untuk semua route yang tidak di-match
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+  
+  console.log("✅ Vercel Serverless mode activated");
+}
+
+// Export untuk Vercel Serverless Function
 export default app;
