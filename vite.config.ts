@@ -58,17 +58,25 @@ const injectCdnPlugin = () => {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+  const isGas = mode === 'gas';
+  
   return {
-    plugins: [react(), tailwindcss(), viteSingleFile(), removeModuleTypePlugin(), injectCdnPlugin()],
+    plugins: [
+      react(), 
+      tailwindcss(), 
+      isGas && viteSingleFile(), 
+      isGas && removeModuleTypePlugin(), 
+      isGas && injectCdnPlugin()
+    ].filter(Boolean),
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
     build: {
-      minify: true, // Re-enable minification to reduce file size below GAS limits
+      minify: true,
       rollupOptions: {
-        external: ['html2pdf.js', 'jspdf', 'html2canvas', 'react', 'react-dom', 'lucide-react', 'motion/react', 'framer-motion'],
+        external: isGas ? ['html2pdf.js', 'jspdf', 'html2canvas', 'react', 'react-dom', 'lucide-react', 'motion/react', 'framer-motion'] : [],
         output: {
-          globals: {
+          globals: isGas ? {
             'html2pdf.js': 'html2pdf',
             'jspdf': 'jspdf',
             'html2canvas': 'html2canvas',
@@ -77,7 +85,7 @@ export default defineConfig(({mode}) => {
             'lucide-react': 'LucideReact',
             'motion/react': 'Motion',
             'framer-motion': 'Motion'
-          }
+          } : {}
         }
       }
     },

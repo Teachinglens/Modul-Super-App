@@ -8,14 +8,30 @@ const app = express();
 
 app.use(express.json());
 
-// Mock Database (In-memory for demo, but structured for persistence)
+// Mock Database (In-memory for demo)
 const USERS_FILE = path.join(process.cwd(), "users.json");
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify([
-    { id: "1", email: "admin@guruai.id", password: "admin123", name: "Admin Modul Super App", role: "admin", package: "premium", downloadCount: 0 },
-    { id: "2", email: "guru@sekolah.id", password: "guru123", name: "Bapak Guru", role: "user", package: "basic", downloadCount: 0 }
-  ]));
+let users: any[] = [
+  { id: "1", email: "admin@guruai.id", password: "admin123", name: "Admin Modul Super App", role: "admin", package: "premium", downloadCount: 0 },
+  { id: "2", email: "guru@sekolah.id", password: "guru123", name: "Bapak Guru", role: "user", package: "basic", downloadCount: 0 }
+];
+
+// Load initial data if exists
+try {
+  if (fs.existsSync(USERS_FILE)) {
+    users = JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+  }
+} catch (e) {
+  console.log("Using default users (read-only environment)");
 }
+
+const saveUsers = (data: any[]) => {
+  users = data;
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("Could not write to users.json (normal on Vercel)");
+  }
+};
 
 // Helper to sync with Google Sheets
 const syncToGas = async (data: any) => {
@@ -286,12 +302,24 @@ app.delete("/api/admin/users/:id", async (req, res) => {
 });
 
 // Admin: Download Compiled HTML for GAS
-app.get("/api/admin/download-html", (req, res) => {
-  const distPath = path.join(process.cwd(), "dist", "index.html");
-  if (fs.existsSync(distPath)) {
-    res.download(distPath, "ModulSuperApp_GAS.html");
-  } else {
-    res.status(404).json({ success: false, message: "File HTML belum di-build. Silakan jalankan 'npm run build' terlebih dahulu." });
+app.get("/api/admin/download-html", async (req, res) => {
+  const { exec } = await import("child_process");
+  const util = await import("util");
+  const execPromise = util.promisify(exec);
+  
+  try {
+    // Run GAS-specific build
+    await execPromise("npm run build:gas");
+    
+    const distPath = path.join(process.cwd(), "dist", "index.html");
+    if (fs.existsSync(distPath)) {
+      res.download(distPath, "ModulSuperApp_GAS.html");
+    } else {
+      res.status(404).json({ success: false, message: "File HTML tidak ditemukan setelah build." });
+    }
+  } catch (error) {
+    console.error("GAS Build error:", error);
+    res.status(500).json({ success: false, message: "Gagal membuat file GAS. Pastikan dependencies terinstal." });
   }
 });
 

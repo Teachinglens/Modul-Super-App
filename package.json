@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx api/index.ts",
     "build": "vite build",
+    "build:gas": "vite build --mode gas",
     "vercel-build": "npm run build",
     "start": "tsx api/index.ts",
     "clean": "rm -rf dist",
