@@ -1,21 +1,51 @@
 import { GoogleGenAI } from "@google/genai";
 import { ModuleData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
+
+// Helper to call AI via proxy if needed
+const callAi = async (params: any) => {
+  // If we are in GAS environment, we MUST use direct client-side call
+  // because the server proxy won't be available.
+  // @ts-ignore
+  const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+  
+  if (isGas) {
+    if (!apiKey) throw new Error("GEMINI_API_KEY is missing in GAS environment.");
+    return await ai.models.generateContent(params);
+  }
+
+  // Otherwise, use server proxy for better reliability and security
+  const response = await fetch("/api/ai/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "AI Proxy Error");
+  return data;
+};
 
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
   const model = "gemini-3-flash-preview";
   const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. Berikan dalam format JSON array of strings.`;
   
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  });
+  try {
+    const response = await callAi({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
 
-  return JSON.parse(response.text);
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Error in suggestTopics:", error);
+    throw error;
+  }
 };
 
 export const suggestObjectives = async (
@@ -36,15 +66,20 @@ Gunakan Model Pembelajaran: ${learningModel}.
 ${loveContext}
 Berikan dalam format JSON array of strings.`;
   
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  });
+  try {
+    const response = await callAi({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
 
-  return JSON.parse(response.text);
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Error in suggestObjectives:", error);
+    throw error;
+  }
 };
 
 export const generateModulAjar = async (data: ModuleData) => {
@@ -112,14 +147,19 @@ FORMAT OUTPUT: JSON STRICT (Hanya JSON, tanpa teks lain)
   "lkpd": "String Markdown (Lembar Kerja Peserta Didik)"
 }
 `;
+  
+  try {
+    const response = await callAi({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  });
-
-  return JSON.parse(response.text);
+    return JSON.parse(response.text);
+  } catch (error) {
+    console.error("Error in generateModulAjar:", error);
+    throw error;
+  }
 };

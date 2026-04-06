@@ -4,9 +4,35 @@ import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import "dotenv/config";
 
+import { GoogleGenAI } from "@google/genai";
+
 const app = express();
 
 app.use(express.json());
+
+// Initialize Gemini AI on server
+const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
+const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
+
+// Gemini AI Proxy Routes
+app.post("/api/ai/generate", async (req, res) => {
+  if (!geminiApiKey) {
+    return res.status(500).json({ success: false, message: "GEMINI_API_KEY is not configured on server." });
+  }
+
+  const { model, contents, config } = req.body;
+  try {
+    const response = await genAI.models.generateContent({
+      model: model || "gemini-3-flash-preview",
+      contents,
+      config
+    });
+    res.json({ success: true, text: response.text });
+  } catch (err: any) {
+    console.error("Gemini API Error:", err);
+    res.status(500).json({ success: false, message: err.message || "Failed to generate content from Gemini" });
+  }
+});
 
 // Mock Database (In-memory for demo)
 const USERS_FILE = path.join(process.cwd(), "users.json");
