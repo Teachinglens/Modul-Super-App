@@ -402,12 +402,24 @@ const Login = ({ onToggleRegister }: { onToggleRegister: () => void }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    const trimmedEmail = email.trim();
+
+    // Check for demo accounts that only exist in the mock server
+    if (trimmedEmail === 'admin@guruai.id' || trimmedEmail === 'guru@sekolah.id') {
+      setError("Akun demo ini hanya untuk simulasi server. Silakan daftar akun baru atau gunakan Google Login untuk akses penuh.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, trimmedEmail, password);
     } catch (err: any) {
       console.error("Login error:", err);
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        setError("Email atau password salah.");
+        setError("Email atau password salah. Pastikan email sudah terdaftar atau gunakan Google Login.");
+      } else if (err.code === 'auth/invalid-email') {
+        setError("Format email tidak valid.");
       } else if (err.code === 'auth/operation-not-allowed') {
         setError("Metode login Email/Password belum diaktifkan di Firebase Console.");
       } else if (err.code === 'auth/too-many-requests') {
@@ -546,18 +558,19 @@ const Register = ({ onToggleLogin }: { onToggleLogin: () => void }) => {
       }
 
       // 1. Create Firebase Auth User
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const trimmedEmail = formData.email.trim();
+      const userCredential = await createUserWithEmailAndPassword(auth, trimmedEmail, formData.password);
       const firebaseUser = userCredential.user;
 
       // 2. Create Firestore User Doc
       const newUser: User = {
         id: firebaseUser.uid,
-        email: formData.email,
-        name: formData.nama,
+        email: trimmedEmail,
+        name: formData.nama.trim(),
         role: "user",
         package: "basic",
         downloadCount: 0,
-        nip: formData.nip
+        nip: formData.nip.trim()
       };
       await setDoc(doc(db, "users", firebaseUser.uid), newUser);
 
@@ -567,7 +580,7 @@ const Register = ({ onToggleLogin }: { onToggleLogin: () => void }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: firebaseUser.uid,
-          email: formData.email.trim(),
+          email: trimmedEmail,
           nama: formData.nama.trim(),
           nip: formData.nip.trim(),
           kode: formData.kode.trim(),
@@ -927,8 +940,8 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     try {
       const topics = await suggestTopics(formData.subject, formData.level, formData.phase);
       setSuggestedTopics(topics);
-    } catch (err) {
-      alert("Gagal mendapatkan saran topik.");
+    } catch (err: any) {
+      alert(`Gagal mendapatkan saran topik: ${err.message || "Terjadi kesalahan"}`);
     } finally {
       setIsSuggesting(false);
     }
@@ -950,8 +963,8 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
         formData.applyLoveCurriculum
       );
       setSuggestedObjectives(objectives);
-    } catch (err) {
-      alert("Gagal mendapatkan saran tujuan pembelajaran.");
+    } catch (err: any) {
+      alert(`Gagal mendapatkan saran tujuan pembelajaran: ${err.message || "Terjadi kesalahan"}`);
     } finally {
       setIsSuggestingObjectives(false);
     }
@@ -1003,8 +1016,9 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       })
       .then(data => console.log("Module sync result:", data))
       .catch(e => console.error("GAS Sync Error:", e));
-    } catch (err) {
-      alert("Gagal membuat modul. Silakan coba lagi.");
+    } catch (err: any) {
+      console.error("Generation error:", err);
+      alert(`Gagal membuat modul: ${err.message || "Terjadi kesalahan"}`);
     } finally {
       setIsGenerating(false);
     }

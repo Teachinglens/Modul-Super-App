@@ -4,24 +4,43 @@ import { ModuleData } from "../types";
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
 const ai = new GoogleGenAI({ apiKey });
 
+// Helper to call AI via proxy if needed
+const callAi = async (params: any) => {
+  // If we are in GAS environment, we MUST use direct client-side call
+  // because the server proxy won't be available.
+  // @ts-ignore
+  const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+  
+  if (isGas) {
+    if (!apiKey) throw new Error("GEMINI_API_KEY is missing in GAS environment.");
+    const response = await ai.models.generateContent(params);
+    return { success: true, text: response.text };
+  }
+
+  // Otherwise, use server proxy for better reliability and security
+  const response = await fetch("/api/ai/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "AI Proxy Error");
+  return data;
+};
+
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
   const model = "gemini-3-flash-preview";
   const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. Berikan dalam format JSON array of strings.`;
   
   try {
-    if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Silakan atur VITE_GEMINI_API_KEY di environment variables.");
-
-    const response = await ai.models.generateContent({
+    const response = await callAi({
       model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       },
     });
-
-    if (!response || !response.text) {
-      throw new Error("Tidak ada respon dari Gemini API");
-    }
 
     return JSON.parse(response.text);
   } catch (error) {
@@ -49,19 +68,13 @@ ${loveContext}
 Berikan dalam format JSON array of strings.`;
   
   try {
-    if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Silakan atur VITE_GEMINI_API_KEY di environment variables.");
-
-    const response = await ai.models.generateContent({
+    const response = await callAi({
       model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       },
     });
-
-    if (!response || !response.text) {
-      throw new Error("Tidak ada respon dari Gemini API");
-    }
 
     return JSON.parse(response.text);
   } catch (error) {
@@ -108,7 +121,7 @@ STRUKTUR WAJIB (STRICT FORMAT):
    - WAJIB: Sertakan Alokasi Waktu di setiap sub-judul kegiatan (Contoh: A. Kegiatan Pendahuluan (10 Menit)).
    - INTI: Langkah-langkah model ${data.model} (Sintaks), Integrasi 4C (Critical Thinking, Collaboration, Creativity, Communication).
    - Jika "Kurikulum Berbasis Cinta" diaktifkan, pastikan langkah-langkahnya mencerminkan pendekatan tersebut.
-10. ASESMEN: Diagnostik, Formatif, dan Sumatif.
+10. ASESMEN: Dari Diagnostik, Formatif, dan Sumatif.
 11. PENGAYAAN & REMEDIAL.
 12. REFLEKSI GURU & PESERTA DIDIK.
 13. LAMPIRAN: Bahan Bacaan, Glosarium, Daftar Pustaka.
@@ -137,19 +150,13 @@ FORMAT OUTPUT: JSON STRICT (Hanya JSON, tanpa teks lain)
 `;
   
   try {
-    if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Silakan atur VITE_GEMINI_API_KEY di environment variables.");
-
-    const response = await ai.models.generateContent({
+    const response = await callAi({
       model,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       },
     });
-
-    if (!response || !response.text) {
-      throw new Error("Tidak ada respon dari Gemini API");
-    }
 
     return JSON.parse(response.text);
   } catch (error) {
