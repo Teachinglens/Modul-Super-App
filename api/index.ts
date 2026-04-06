@@ -23,7 +23,9 @@ app.post("/api/ai/generate", async (req, res) => {
       contents,
       config
     });
-    res.json({ success: true, text: response.text });
+    
+    const text = response.text || "";
+    res.json({ success: true, text });
   } catch (err: any) {
     console.error("Gemini API Error:", err);
     res.status(500).json({ success: false, message: err.message || "Failed to generate content from Gemini" });

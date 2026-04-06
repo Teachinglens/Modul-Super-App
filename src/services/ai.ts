@@ -3,6 +3,35 @@ import { ModuleData } from "../types";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
 
+// Helper to extract JSON from a string that might contain extra text
+const extractJson = (text: string) => {
+  try {
+    // Try direct parse first
+    return JSON.parse(text);
+  } catch (e) {
+    // Try to find JSON block
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    
+    if (start !== -1 && end !== -1 && end > start) {
+      const jsonStr = text.substring(start, end + 1);
+      try {
+        return JSON.parse(jsonStr);
+      } catch (innerError) {
+        // If it's an array
+        const startArr = text.indexOf('[');
+        const endArr = text.lastIndexOf(']');
+        if (startArr !== -1 && endArr !== -1 && endArr > startArr) {
+          const jsonArrStr = text.substring(startArr, endArr + 1);
+          return JSON.parse(jsonArrStr);
+        }
+        throw innerError;
+      }
+    }
+    throw e;
+  }
+};
+
 // Helper to call AI via proxy if needed
 const callAi = async (params: any) => {
   // If we are in GAS environment, we MUST use direct client-side call
@@ -48,7 +77,7 @@ export const suggestTopics = async (subject: string, level: string, phase: strin
       },
     });
 
-    return JSON.parse(response.text);
+    return extractJson(response.text);
   } catch (error) {
     console.error("Error in suggestTopics:", error);
     throw error;
@@ -82,7 +111,7 @@ Berikan dalam format JSON array of strings.`;
       },
     });
 
-    return JSON.parse(response.text);
+    return extractJson(response.text);
   } catch (error) {
     console.error("Error in suggestObjectives:", error);
     throw error;
@@ -164,7 +193,7 @@ FORMAT OUTPUT: JSON STRICT (Hanya JSON, tanpa teks lain)
       },
     });
 
-    return JSON.parse(response.text);
+    return extractJson(response.text);
   } catch (error) {
     console.error("Error in generateModulAjar:", error);
     throw error;
