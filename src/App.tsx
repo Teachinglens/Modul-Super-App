@@ -1787,78 +1787,80 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       id="module-content"
                       className={`pdf-page shadow-2xl border border-slate-200 prose prose-slate max-w-none text-[12pt] leading-relaxed ${user.package === 'basic' ? 'select-none' : ''}`}
                     >
-                    <div className="text-center border-b-2 border-slate-800 pb-6 mb-8">
-                      <h1 className="text-2xl font-bold uppercase m-0 tracking-wider">MODUL AJAR {formData.subject}</h1>
-                      <h2 className="text-lg font-bold uppercase mt-1 mb-0 opacity-80">KURIKULUM MERDEKA - FASE {formData.phase} / {formData.className}</h2>
-                      <p className="text-lg font-semibold m-0 mt-3 text-slate-700">{formData.schoolName}</p>
-                      <p className="text-sm font-medium m-0 mt-1 italic text-slate-500">Tahun Pelajaran: {formData.year}</p>
-                    </div>
+                    <div className="page-header-container">
+                      <div className="text-center border-b-2 border-slate-800 pb-6 mb-8">
+                        <h1 className="text-2xl font-bold uppercase m-0 tracking-wider">MODUL AJAR {formData.subject}</h1>
+                        <h2 className="text-lg font-bold uppercase mt-1 mb-0 opacity-80">KURIKULUM MERDEKA - FASE {formData.phase} / {formData.className}</h2>
+                        <p className="text-lg font-semibold m-0 mt-3 text-slate-700">{formData.schoolName}</p>
+                        <p className="text-sm font-medium m-0 mt-1 italic text-slate-500">Tahun Pelajaran: {formData.year}</p>
+                      </div>
 
-                    <section className="mb-8">
-                      <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-                        <div className="space-y-2 text-base">
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Nama Guru</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.teacherName}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">NIP</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.nip || "-"}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Nama Sekolah</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.schoolName}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Mata Pelajaran</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.subject}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Kelas / Fase</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.className} / {formData.phase}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Materi Pokok</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.topic}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Alokasi Waktu</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.allocation}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-bold w-40 shrink-0">Tahun Pelajaran</span>
-                            <span className="shrink-0">:</span>
-                            <span className="flex-1">{formData.year}</span>
+                      <section className="mb-8">
+                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                          <div className="space-y-2 text-base">
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Nama Guru</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.teacherName}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">NIP</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.nip || "-"}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Nama Sekolah</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.schoolName}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Mata Pelajaran</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.subject}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Kelas / Fase</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.className} / {formData.phase}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Materi Pokok</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.topic}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Alokasi Waktu</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.allocation}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="font-bold w-40 shrink-0">Tahun Pelajaran</span>
+                              <span className="shrink-0">:</span>
+                              <span className="flex-1">{formData.year}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </section>
+                      </section>
+                    </div>
 
-                    <section className="mb-8">
-                      <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">I. PROFIL PELAJAR PANCASILA</h3>
-                      <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
-                        <ReactMarkdown>{generatedModule.profilPancasila}</ReactMarkdown>
-                      </div>
-                    </section>
+                  <section className="mb-8 section-break">
+                    <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">I. PROFIL PELAJAR PANCASILA</h3>
+                    <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
+                      <ReactMarkdown>{generatedModule.profilPancasila}</ReactMarkdown>
+                    </div>
+                  </section>
 
                   <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">II. SARANA DAN PRASARANA</h3>
                     <ReactMarkdown>{generatedModule.saranaPrasarana}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">III. TARGET PESERTA DIDIK</h3>
                     <ReactMarkdown>{generatedModule.targetPesertaDidik}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">IV. MODEL & METODE PEMBELAJARAN</h3>
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <p className="m-0 font-bold">Model: {formData.model}</p>
@@ -1873,12 +1875,12 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     </div>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VI. PEMAHAMAN BERMAKNA</h3>
                     <ReactMarkdown>{generatedModule.pemahamanBermakna}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VII. PERTANYAAN PEMANTIK</h3>
                     <ReactMarkdown>{generatedModule.pertanyaanPemantik}</ReactMarkdown>
                   </section>
@@ -1908,12 +1910,12 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     </div>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">X. PENGAYAAN DAN REMEDIAL</h3>
                     <ReactMarkdown>{generatedModule.pengayaanRemedial}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8">
+                  <section className="mb-8 section-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XI. REFLEKSI GURU & PESERTA DIDIK</h3>
                     <ReactMarkdown>{generatedModule.refleksi}</ReactMarkdown>
                   </section>

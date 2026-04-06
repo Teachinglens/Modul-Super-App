@@ -70,7 +70,7 @@
 .pdf-page {
   width: 794px; /* Exactly A4 width at 96dpi */
   min-height: 1123px;
-  padding: 60px;
+  padding: 94px; /* Exactly 2.5cm at 96dpi */
   margin: 0 auto;
   background: white;
   box-sizing: border-box;
@@ -83,13 +83,14 @@
   border: none !important;
   margin: 0 !important;
   width: 794px !important;
+  padding: 94px !important;
 }
 
 /* Ensure page breaks don't cut off content */
 .prose section {
-  page-break-inside: avoid;
-  break-inside: avoid;
-  margin-bottom: 1.5rem;
+  page-break-inside: auto;
+  break-inside: auto;
+  margin-bottom: 2rem;
   display: block;
   width: 100%;
 }
@@ -108,7 +109,18 @@
 .prose h1, .prose h2, .prose h3 {
   page-break-after: avoid;
   break-after: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
   color: #0f172a !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.page-header-container {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  display: block;
+  width: 100%;
 }
 
 /* Force page break for major sections to keep it professional */
@@ -116,6 +128,8 @@
   page-break-before: always !important;
   break-before: page !important;
   margin-top: 0 !important;
+  display: block !important;
+  width: 100% !important;
 }
 
 /* Typography Overrides to avoid oklch in html2canvas */
