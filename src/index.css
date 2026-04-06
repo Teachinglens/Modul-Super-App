@@ -90,12 +90,32 @@
   page-break-inside: avoid;
   break-inside: avoid;
   margin-bottom: 1.5rem;
+  display: block;
+  width: 100%;
+}
+
+/* Allow long sections to break if they exceed one page, but avoid breaking inside paragraphs/lists */
+.prose .allow-break {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
+}
+
+.prose p, .prose li, .prose tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .prose h1, .prose h2, .prose h3 {
   page-break-after: avoid;
   break-after: avoid;
   color: #0f172a !important;
+}
+
+/* Force page break for major sections to keep it professional */
+.section-break {
+  page-break-before: always !important;
+  break-before: page !important;
+  margin-top: 0 !important;
 }
 
 /* Typography Overrides to avoid oklch in html2canvas */
