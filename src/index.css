@@ -68,37 +68,71 @@
 
 /* PDF and A4 Paper Styling */
 .pdf-page {
-  width: 210mm;
-  min-height: 297mm;
-  padding: 20mm;
+  width: 794px; /* Exactly A4 width at 96dpi */
+  min-height: 1123px;
+  padding: 60px;
   margin: 0 auto;
   background: white;
   box-sizing: border-box;
   position: relative;
+  color: #334155 !important;
 }
 
 .generating-pdf {
   box-shadow: none !important;
   border: none !important;
+  margin: 0 !important;
+  width: 794px !important;
 }
 
 /* Ensure page breaks don't cut off content */
 .prose section {
   page-break-inside: avoid;
   break-inside: avoid;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .prose h1, .prose h2, .prose h3 {
   page-break-after: avoid;
   break-after: avoid;
+  color: #0f172a !important;
 }
 
 /* Typography Overrides to avoid oklch in html2canvas */
 .prose {
   font-size: 12pt !important;
   line-height: 1.6 !important;
-  color: #334155 !important;
+  --tw-prose-body: #334155;
+  --tw-prose-headings: #0f172a;
+  --tw-prose-lead: #475569;
+  --tw-prose-links: #0f172a;
+  --tw-prose-bold: #0f172a;
+  --tw-prose-counters: #64748b;
+  --tw-prose-bullets: #cbd5e1;
+  --tw-prose-hr: #e2e8f0;
+  --tw-prose-quotes: #0f172a;
+  --tw-prose-quote-borders: #e2e8f0;
+  --tw-prose-captions: #64748b;
+  --tw-prose-code: #0f172a;
+  --tw-prose-pre-code: #e2e8f0;
+  --tw-prose-pre-bg: #1e293b;
+  --tw-prose-th-borders: #cbd5e1;
+  --tw-prose-td-borders: #e2e8f0;
+}
+
+/* Table styling for PDF */
+.prose table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-bottom: 1rem !important;
+  table-layout: fixed !important;
+}
+
+.prose th, .prose td {
+  border: 1px solid #e2e8f0 !important;
+  padding: 8px !important;
+  text-align: left !important;
+  word-wrap: break-word !important;
 }
 
 /* Fix PDF list alignment */
