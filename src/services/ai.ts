@@ -2,7 +2,6 @@ import { GoogleGenAI } from "@google/genai";
 import { ModuleData } from "../types";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
 
 // Helper to call AI via proxy if needed
 const callAi = async (params: any) => {
@@ -13,6 +12,7 @@ const callAi = async (params: any) => {
   
   if (isGas) {
     if (!apiKey) throw new Error("GEMINI_API_KEY is missing in GAS environment.");
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent(params);
     return { success: true, text: response.text };
   }
@@ -23,6 +23,12 @@ const callAi = async (params: any) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
   });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error("Server Error Response:", text);
+    throw new Error(`Server error (${response.status}). Pastikan GEMINI_API_KEY sudah diatur di Vercel.`);
+  }
 
   const data = await response.json();
   if (!data.success) throw new Error(data.message || "AI Proxy Error");
