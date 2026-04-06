@@ -73,6 +73,7 @@ export default defineConfig(({mode}) => {
     },
     build: {
       minify: true,
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         external: isGas ? ['html2pdf.js', 'jspdf', 'html2canvas', 'react', 'react-dom', 'lucide-react', 'motion/react', 'framer-motion'] : [],
         output: {
