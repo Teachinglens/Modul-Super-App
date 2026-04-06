@@ -29,6 +29,13 @@ export interface ModuleData {
   principalNip: string;
   isNipLocked: boolean;
   isPrincipalLocked: boolean;
+  isSchoolLocked?: boolean;
+  isSubjectLocked?: boolean;
+  isLevelLocked?: boolean;
+  isClassLocked?: boolean;
+  isYearLocked?: boolean;
+  isLocationLocked?: boolean;
+  isAllocationLocked?: boolean;
   applyLoveCurriculum: boolean;
 }
 

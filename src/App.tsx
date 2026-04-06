@@ -777,23 +777,30 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
   const [formData, setFormData] = useState<ModuleData>({
     teacherName: user.name,
     nip: localStorage.getItem(`nip_${user.id}`) || "",
-    subject: "",
-    level: "",
-    className: "",
-    phase: "",
-    year: "",
+    subject: localStorage.getItem(`subject_${user.id}`) || "",
+    level: localStorage.getItem(`level_${user.id}`) || "",
+    className: localStorage.getItem(`class_${user.id}`) || "",
+    phase: localStorage.getItem(`phase_${user.id}`) || "",
+    year: localStorage.getItem(`year_${user.id}`) || "",
     topic: "",
     learningObjectives: "",
     model: "Problem Based Learning (PBL)",
     characters: [],
-    schoolName: "",
-    allocation: "",
-    location: "",
+    schoolName: localStorage.getItem(`school_${user.id}`) || "",
+    allocation: localStorage.getItem(`alloc_${user.id}`) || "",
+    location: localStorage.getItem(`loc_${user.id}`) || "",
     date: "",
     principalName: localStorage.getItem(`p_name_${user.id}`) || "",
     principalNip: localStorage.getItem(`p_nip_${user.id}`) || "",
     isNipLocked: !!localStorage.getItem(`nip_locked_${user.id}`),
     isPrincipalLocked: !!localStorage.getItem(`p_locked_${user.id}`),
+    isSchoolLocked: !!localStorage.getItem(`school_locked_${user.id}`),
+    isSubjectLocked: !!localStorage.getItem(`subject_locked_${user.id}`),
+    isLevelLocked: !!localStorage.getItem(`level_locked_${user.id}`),
+    isClassLocked: !!localStorage.getItem(`class_locked_${user.id}`),
+    isYearLocked: !!localStorage.getItem(`year_locked_${user.id}`),
+    isLocationLocked: !!localStorage.getItem(`loc_locked_${user.id}`),
+    isAllocationLocked: !!localStorage.getItem(`alloc_locked_${user.id}`),
     applyLoveCurriculum: false,
   });
 
@@ -815,6 +822,28 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       localStorage.removeItem(`p_locked_${user.id}`);
     }
   }, [formData.isPrincipalLocked, formData.principalName, formData.principalNip, user.id]);
+  useEffect(() => {
+    const locks = [
+      { key: 'school', locked: formData.isSchoolLocked, value: formData.schoolName },
+      { key: 'subject', locked: formData.isSubjectLocked, value: formData.subject },
+      { key: 'level', locked: formData.isLevelLocked, value: formData.level },
+      { key: 'class', locked: formData.isClassLocked, value: formData.className },
+      { key: 'phase', locked: formData.isClassLocked, value: formData.phase },
+      { key: 'year', locked: formData.isYearLocked, value: formData.year },
+      { key: 'loc', locked: formData.isLocationLocked, value: formData.location },
+      { key: 'alloc', locked: formData.isAllocationLocked, value: formData.allocation },
+    ];
+
+    locks.forEach(lock => {
+      if (lock.locked) {
+        localStorage.setItem(`${lock.key}_${user.id}`, lock.value);
+        localStorage.setItem(`${lock.key}_locked_${user.id}`, "true");
+      } else {
+        localStorage.removeItem(`${lock.key}_locked_${user.id}`);
+      }
+    });
+  }, [formData, user.id]);
+
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
   const [suggestedObjectives, setSuggestedObjectives] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -1047,20 +1076,23 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     }
     
     setIsDownloading(true);
+    element.classList.add("generating-pdf");
+    
     try {
       console.log("Starting PDF generation with html2pdf...");
       
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: [15, 15, 15, 15] as [number, number, number, number],
+        margin: 0,
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          logging: false
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] as any }
@@ -1099,6 +1131,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       console.error("PDF Download Error:", err);
       alert("Gagal mengunduh PDF. Pastikan koneksi internet stabil dan coba lagi.");
     } finally {
+      element.classList.remove("generating-pdf");
       setIsDownloading(false);
     }
   };
@@ -1253,6 +1286,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed outline-none"
                       value={formData.teacherName}
                     />
+                    <p className="text-[10px] text-slate-400 font-medium mt-1 italic">*Nama guru terkunci sesuai profil akun</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -1275,29 +1309,59 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     {!formData.nip && !formData.isNipLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Nama Sekolah</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Nama Sekolah</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isSchoolLocked: !formData.isSchoolLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isSchoolLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isSchoolLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isSchoolLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <input
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      readOnly={formData.isSchoolLocked}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isSchoolLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       placeholder="Contoh: SD Negeri 01 Jakarta"
                       value={formData.schoolName}
                       onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
                     />
-                    {!formData.schoolName && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.schoolName && !formData.isSchoolLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Mata Pelajaran</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Mata Pelajaran</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isSubjectLocked: !formData.isSubjectLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isSubjectLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isSubjectLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isSubjectLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <input
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      readOnly={formData.isSubjectLocked}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isSubjectLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       placeholder="Contoh: Matematika"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     />
-                    {!formData.subject && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.subject && !formData.isSubjectLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Jenjang</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Jenjang</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isLevelLocked: !formData.isLevelLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isLevelLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isLevelLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isLevelLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <select
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={formData.isLevelLocked}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isLevelLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       value={formData.level}
                       onChange={(e) => handleLevelChange(e.target.value)}
                     >
@@ -1306,22 +1370,31 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                         <option key={level} value={level}>{level}</option>
                       ))}
                     </select>
-                    {!formData.level && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.level && !formData.isLevelLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Kelas</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Kelas</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isClassLocked: !formData.isClassLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isClassLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isClassLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isClassLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <select
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={formData.isClassLocked || !formData.level}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isClassLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       value={formData.className}
                       onChange={(e) => handleClassChange(e.target.value)}
-                      disabled={!formData.level}
                     >
                       <option value="">Pilih Kelas</option>
                       {formData.level && educationLevels[formData.level as keyof typeof educationLevels]?.classes.map(c => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
-                    {!formData.className && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.className && !formData.isClassLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Fase Kurikulum</label>
@@ -1333,24 +1406,44 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Tahun Pelajaran</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Tahun Pelajaran</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isYearLocked: !formData.isYearLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isYearLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isYearLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isYearLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <input
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      readOnly={formData.isYearLocked}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isYearLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       placeholder="Contoh: 2024/2025"
                       value={formData.year}
                       onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                     />
-                    {!formData.year && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.year && !formData.isYearLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Tempat Pengisian</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">Tempat Pengisian</label>
+                      <button 
+                        onClick={() => setFormData({ ...formData, isLocationLocked: !formData.isLocationLocked })}
+                        className={`text-xs flex items-center gap-1 font-bold ${formData.isLocationLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                      >
+                        {formData.isLocationLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {formData.isLocationLocked ? 'Terkunci' : 'Kunci'}
+                      </button>
+                    </div>
                     <input
-                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                      readOnly={formData.isLocationLocked}
+                      className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isLocationLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                       placeholder="Contoh: Jakarta"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     />
-                    {!formData.location && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                    {!formData.location && !formData.isLocationLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Tanggal Pengisian</label>
@@ -1511,14 +1604,24 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-slate-700">Alokasi Waktu</label>
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm font-semibold text-slate-700">Alokasi Waktu</label>
+                            <button 
+                              onClick={() => setFormData({ ...formData, isAllocationLocked: !formData.isAllocationLocked })}
+                              className={`text-xs flex items-center gap-1 font-bold ${formData.isAllocationLocked ? 'text-blue-600' : 'text-slate-400'}`}
+                            >
+                              {formData.isAllocationLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                              {formData.isAllocationLocked ? 'Terkunci' : 'Kunci'}
+                            </button>
+                          </div>
                           <input
-                            className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                            readOnly={formData.isAllocationLocked}
+                            className={`w-full px-4 py-2 rounded-lg border border-slate-200 outline-none transition-all ${formData.isAllocationLocked ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
                             placeholder="Contoh: 2 x 35 Menit"
                             value={formData.allocation}
                             onChange={(e) => setFormData({ ...formData, allocation: e.target.value })}
                           />
-                          {!formData.allocation && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                          {!formData.allocation && !formData.isAllocationLocked && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
                         </div>
                       </div>
                     </div>
@@ -1678,10 +1781,11 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   </div>
                 </div>
 
-                <div 
-                  id="module-content"
-                  className={`bg-white p-6 md:p-12 rounded-2xl shadow-lg border border-slate-200 prose prose-slate max-w-none text-[12pt] leading-relaxed ${user.package === 'basic' ? 'select-none' : ''}`}
-                >
+                <div className="overflow-x-auto pb-8 bg-slate-100 rounded-2xl p-4 md:p-8">
+                  <div 
+                    id="module-content"
+                    className={`pdf-page shadow-2xl border border-slate-200 prose prose-slate max-w-none text-[12pt] leading-relaxed ${user.package === 'basic' ? 'select-none' : ''}`}
+                  >
                   <div className="text-center border-b-2 border-slate-800 pb-6 mb-8">
                     <h1 className="text-xl md:text-3xl font-bold uppercase m-0 tracking-wider">MODUL AJAR {formData.subject}</h1>
                     <h2 className="text-lg md:text-xl font-bold uppercase mt-1 mb-0 opacity-80">KURIKULUM MERDEKA - FASE {formData.phase} / {formData.className}</h2>
@@ -1844,6 +1948,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     </section>
                   )}
                 </div>
+              </div>
               </motion.div>
             )}
             {activeTab === "users" && user.role === "admin" && (
