@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Gemini AI Status Check
 app.get("/api/ai/status", (req, res) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.API_KEY || "";
   res.json({ 
     success: true, 
     configured: !!geminiApiKey,
@@ -19,11 +19,11 @@ app.get("/api/ai/status", (req, res) => {
 
 // Gemini AI Proxy Routes
 app.post("/api/ai/generate", async (req, res) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
+  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.API_KEY || "";
   if (!geminiApiKey) {
     return res.status(500).json({ 
       success: false, 
-      message: "GEMINI_API_KEY belum diatur di server Vercel. Silakan tambahkan di Settings > Environment Variables, lalu lakukan Redeploy." 
+      message: "GEMINI_API_KEY belum diatur di server Vercel. Silakan tambahkan di Settings > Environment Variables, lalu lakukan REDEPLOY proyek Anda." 
     });
   }
 

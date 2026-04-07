@@ -64,7 +64,7 @@ const callAi = async (params: any) => {
     
     // Add helpful context for common errors
     if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
-      errorMsg = "GEMINI_API_KEY belum diatur di server. \n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel Anda\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY dengan nilai API Key Anda\n4. Klik Save dan lakukan REDEPLOY proyek Anda.";
+      errorMsg = "GEMINI_API_KEY belum diatur di server Vercel. \n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel Anda\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY dengan nilai API Key Anda\n4. Klik Save\n5. Buka tab Deployments dan lakukan REDEPLOY (Wajib agar perubahan terbaca).";
     }
     
     console.error("AI Proxy Error:", errorMsg);

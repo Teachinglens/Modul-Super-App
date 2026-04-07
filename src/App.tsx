@@ -773,6 +773,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
   }, [initialUser]);
 
   const [activeTab, setActiveTab] = useState<"input" | "admin" | "preview" | "users">("input");
+  const [isAiConfigured, setIsAiConfigured] = useState<boolean | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [formData, setFormData] = useState<ModuleData>({
     teacherName: user.name,
@@ -916,6 +917,14 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     
     return allFieldsFilled && nipValid && principalValid;
   };
+
+  useEffect(() => {
+    // Check AI status on load
+    fetch("/api/ai/status")
+      .then(res => res.json())
+      .then(data => setIsAiConfigured(data.configured))
+      .catch(() => setIsAiConfigured(false));
+  }, []);
 
   const handleTabChange = (tab: "input" | "admin" | "preview" | "users") => {
     // Selalu izinkan kembali ke Input Data
@@ -1232,6 +1241,27 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
 
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-8 relative">
+        {/* AI Configuration Warning */}
+        {isAiConfigured === false && (
+          <div className="max-w-4xl mx-auto mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-4 shadow-sm">
+              <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-red-800">Sistem AI Belum Aktif</h4>
+                <p className="text-xs text-red-600 mt-1 leading-relaxed">
+                  GEMINI_API_KEY belum terdeteksi di server Vercel. Fitur "Saran AI" dan "Generate Modul" tidak akan berfungsi.
+                  <button 
+                    onClick={() => setActiveTab("admin")}
+                    className="ml-2 font-bold underline hover:text-red-800"
+                  >
+                    Lihat Cara Memperbaiki
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Elegant Account Status in Top Right */}
         {user.role !== "admin" && (
           <div className="hidden md:flex absolute top-8 right-8 items-center gap-4 z-10">
@@ -1575,7 +1605,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                                 if (data.configured) {
                                   alert(`AI Siap! Terhubung ke ${data.environment}.`);
                                 } else {
-                                  alert(`AI Belum Siap: GEMINI_API_KEY belum diatur di ${data.environment}.\n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY\n4. Klik Save dan lakukan REDEPLOY proyek Anda.`);
+                                  alert(`AI Belum Siap: GEMINI_API_KEY belum diatur di ${data.environment}.\n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY\n4. Klik Save\n5. Buka tab Deployments dan lakukan REDEPLOY proyek Anda.`);
                                 }
                               } catch (e) {
                                 alert("Gagal menghubungi server AI.");
