@@ -1084,7 +1084,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: 0,
+        margin: [25, 25, 25, 25], // 2.5cm margins on all sides
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
@@ -1092,8 +1092,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
           useCORS: true, 
           letterRendering: true,
           backgroundColor: '#ffffff',
-          logging: false,
-          width: 794
+          logging: false
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
         pagebreak: { mode: ['css', 'legacy'] as any }
@@ -1875,24 +1874,24 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       </section>
                     </div>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">I. PROFIL PELAJAR PANCASILA</h3>
                     <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
                       <ReactMarkdown>{generatedModule.profilPancasila}</ReactMarkdown>
                     </div>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">II. SARANA DAN PRASARANA</h3>
                     <ReactMarkdown>{generatedModule.saranaPrasarana}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">III. TARGET PESERTA DIDIK</h3>
                     <ReactMarkdown>{generatedModule.targetPesertaDidik}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">IV. MODEL & METODE PEMBELAJARAN</h3>
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <p className="m-0 font-bold">Model: {formData.model}</p>
@@ -1900,31 +1899,31 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     </div>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">V. TUJUAN PEMBELAJARAN</h3>
                     <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
                       <ReactMarkdown>{generatedModule.tujuanPembelajaran}</ReactMarkdown>
                     </div>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VI. PEMAHAMAN BERMAKNA</h3>
                     <ReactMarkdown>{generatedModule.pemahamanBermakna}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VII. PERTANYAAN PEMANTIK</h3>
                     <ReactMarkdown>{generatedModule.pertanyaanPemantik}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break allow-break">
+                  <section className="mb-8 allow-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VIII. KEGIATAN PEMBELAJARAN</h3>
                     <div className="prose prose-slate max-w-none prose-headings:text-blue-600 prose-headings:font-bold prose-p:text-slate-600 prose-strong:text-slate-800 prose-table:border prose-table:border-slate-200 prose-th:bg-slate-50 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-slate-100">
                       <ReactMarkdown>{generatedModule.kegiatanPembelajaran}</ReactMarkdown>
                     </div>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">IX. ASESMEN / PENILAIAN</h3>
                     <div className="space-y-4">
                       <div className="p-3 bg-slate-50 rounded-lg">
@@ -1942,17 +1941,17 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     </div>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">X. PENGAYAAN DAN REMEDIAL</h3>
                     <ReactMarkdown>{generatedModule.pengayaanRemedial}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XI. REFLEKSI GURU & PESERTA DIDIK</h3>
                     <ReactMarkdown>{generatedModule.refleksi}</ReactMarkdown>
                   </section>
 
-                  <section className="mb-8 section-break">
+                  <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XII. LAMPIRAN</h3>
                     <ReactMarkdown>{generatedModule.lampiran}</ReactMarkdown>
                   </section>
@@ -1975,7 +1974,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   </div>
 
                   {generatedModule.lkpd && (
-                    <section className="mt-16 pt-8 border-t-2 border-slate-200 section-break allow-break">
+                    <section className="mt-16 pt-8 border-t-2 border-slate-200 allow-break">
                       <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
                       <div className="bg-white p-4 rounded-lg border border-slate-100">
                         <ReactMarkdown>{generatedModule.lkpd}</ReactMarkdown>

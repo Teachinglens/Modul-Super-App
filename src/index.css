@@ -82,8 +82,8 @@
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 794px !important;
-  padding: 94px !important;
+  width: 100% !important; /* Let the library handle the width based on margins */
+  padding: 0 !important; /* Remove internal padding, library adds 2.5cm margin */
 }
 
 /* Ensure page breaks don't cut off content */
@@ -123,7 +123,7 @@
   width: 100%;
 }
 
-/* Force page break for major sections to keep it professional */
+/* Force page break for major sections only if explicitly needed */
 .section-break {
   page-break-before: always !important;
   break-before: page !important;
