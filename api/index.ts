@@ -7,28 +7,56 @@ const app = express();
 
 app.use(express.json());
 
+// Gemini AI Status Check
+app.get("/api/ai/status", (req, res) => {
+  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
+  res.json({ 
+    success: true, 
+    configured: !!geminiApiKey,
+    environment: process.env.VERCEL === "1" ? "Vercel" : "Local/AI Studio"
+  });
+});
+
 // Gemini AI Proxy Routes
 app.post("/api/ai/generate", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
   if (!geminiApiKey) {
-    return res.status(500).json({ success: false, message: "GEMINI_API_KEY is not configured on server." });
+    return res.status(500).json({ 
+      success: false, 
+      message: "GEMINI_API_KEY belum diatur di server Vercel. Silakan tambahkan di Settings > Environment Variables, lalu lakukan Redeploy." 
+    });
   }
 
   const { model, contents, config } = req.body;
   try {
     const { GoogleGenAI } = await import("@google/genai");
     const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
+    
+    // Ensure contents is in the right format for the SDK
+    // The SDK expects contents to be a string or an array of parts/contents
     const response = await genAI.models.generateContent({
       model: model || "gemini-3-flash-preview",
-      contents,
-      config
+      contents: contents,
+      config: config
     });
     
-    const text = response.text || "";
-    res.json({ success: true, text });
+    if (!response || !response.text) {
+      throw new Error("Gemini returned an empty response.");
+    }
+    
+    res.json({ success: true, text: response.text });
   } catch (err: any) {
     console.error("Gemini API Error:", err);
-    res.status(500).json({ success: false, message: err.message || "Failed to generate content from Gemini" });
+    
+    // Provide more specific error messages
+    let errorMessage = err.message || "Failed to generate content from Gemini";
+    if (errorMessage.includes("API_KEY_INVALID")) {
+      errorMessage = "GEMINI_API_KEY tidak valid. Silakan periksa kembali di Settings.";
+    } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
+      errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti.";
+    }
+    
+    res.status(500).json({ success: false, message: errorMessage });
   }
 });
 

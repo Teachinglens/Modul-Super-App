@@ -54,9 +54,21 @@ const callAi = async (params: any) => {
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    console.error("Server Error Response:", text);
-    throw new Error(`Server error (${response.status}). Pastikan GEMINI_API_KEY sudah diatur di Vercel.`);
+    let errorMsg = `Server error (${response.status}).`;
+    try {
+      const errorData = await response.json();
+      errorMsg = errorData.message || errorMsg;
+    } catch (e) {
+      // Fallback if not JSON
+    }
+    
+    // Add helpful context for common errors
+    if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
+      errorMsg = "GEMINI_API_KEY belum diatur di server. \n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel Anda\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY dengan nilai API Key Anda\n4. Klik Save dan lakukan REDEPLOY proyek Anda.";
+    }
+    
+    console.error("AI Proxy Error:", errorMsg);
+    throw new Error(errorMsg);
   }
 
   const data = await response.json();

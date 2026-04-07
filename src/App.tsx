@@ -1557,6 +1557,38 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                         )}
                       </div>
 
+                      <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600">
+                              <Sparkles className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800">Status Sistem AI</h4>
+                              <p className="text-xs text-slate-500">Cek koneksi ke server Gemini AI.</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/ai/status");
+                                const data = await res.json();
+                                if (data.configured) {
+                                  alert(`AI Siap! Terhubung ke ${data.environment}.`);
+                                } else {
+                                  alert(`AI Belum Siap: GEMINI_API_KEY belum diatur di ${data.environment}.\n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY\n4. Klik Save dan lakukan REDEPLOY proyek Anda.`);
+                                }
+                              } catch (e) {
+                                alert("Gagal menghubungi server AI.");
+                              }
+                            }}
+                            className="text-xs font-bold text-blue-600 hover:underline"
+                          >
+                            Cek Koneksi
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="p-6 rounded-2xl bg-blue-50 border border-blue-100 space-y-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
