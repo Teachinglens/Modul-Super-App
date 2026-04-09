@@ -1857,49 +1857,51 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       </div>
 
                       <section className="mb-8">
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-                          <div className="space-y-2 text-base">
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Nama Guru</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.teacherName}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">NIP</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.nip || "-"}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Nama Sekolah</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.schoolName}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Mata Pelajaran</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.subject}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Kelas / Fase</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.className} / {formData.phase}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Materi Pokok</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.topic}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Alokasi Waktu</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.allocation}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <span className="font-bold w-40 shrink-0">Tahun Pelajaran</span>
-                              <span className="shrink-0">:</span>
-                              <span className="flex-1">{formData.year}</span>
-                            </div>
-                          </div>
+                        <div className="py-2">
+                          <table className="w-full border-none text-base border-collapse">
+                            <tbody>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Nama Guru</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.teacherName}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">NIP</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.nip || "-"}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Nama Sekolah</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.schoolName}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Mata Pelajaran</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.subject}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Kelas / Fase</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.className} / {formData.phase}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Materi Pokok</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.topic}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Alokasi Waktu</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.allocation}</td>
+                              </tr>
+                              <tr>
+                                <td className="font-bold py-1 w-[180px] align-top border-none!">Tahun Pelajaran</td>
+                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
+                                <td className="py-1 align-top border-none!">{formData.year}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </section>
                     </div>
