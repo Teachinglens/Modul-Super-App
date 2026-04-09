@@ -42,76 +42,101 @@ const extractJson = (text: string) => {
   }
 };
 
-// Helper to call AI via proxy or directly
-const callAi = async (params: any) => {
-  // 1. Try direct frontend call first if key is available (Recommended by SKILL.md)
-  if (frontendAi) {
+// Helper to call AI via proxy or directly with retry logic
+const callAi = async (params: any, retries = 3) => {
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+  for (let i = 0; i < retries; i++) {
     try {
-      const response = await frontendAi.models.generateContent({
-        model: params.model || "gemini-3-flash-preview",
-        contents: params.contents,
-        config: params.config
-      });
-      if (response && response.text) {
+      // 1. Try direct frontend call first if key is available (Recommended by SKILL.md)
+      if (frontendAi) {
+        try {
+          const response = await frontendAi.models.generateContent({
+            model: params.model || "gemini-3-flash-preview",
+            contents: params.contents,
+            config: params.config
+          });
+          if (response && response.text) {
+            return { success: true, text: response.text };
+          }
+        } catch (e: any) {
+          console.warn(`Direct frontend AI call attempt ${i + 1} failed:`, e.message);
+          
+          // If it's a 503 or 429, we should retry
+          const isRetryable = e.message.includes("503") || e.message.includes("429") || e.message.includes("high demand");
+          
+          if (isRetryable && i < retries - 1) {
+            await delay(Math.pow(2, i) * 1000);
+            continue;
+          }
+
+          // If it's an auth error, we might want to try the proxy which might have a different key
+          if (!e.message.includes("API_KEY_INVALID") && !e.message.includes("400") && !isRetryable) {
+            throw e;
+          }
+        }
+      }
+
+      // 2. If we are in GAS environment, we MUST use direct client-side call
+      // @ts-ignore
+      const isGas = typeof google !== 'undefined' && google.script && google.script.run;
+      
+      if (isGas) {
+        if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Pastikan sudah diatur di Script Properties.");
+        const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
+        const response = await ai.models.generateContent({
+          model: params.model || "gemini-3-flash-preview",
+          contents: params.contents,
+          config: params.config
+        });
         return { success: true, text: response.text };
       }
-    } catch (e: any) {
-      console.warn("Direct frontend AI call failed, falling back to proxy/GAS:", e.message);
-      // If it's an auth error, we might want to try the proxy which might have a different key
-      if (!e.message.includes("API_KEY_INVALID") && !e.message.includes("400")) {
-        throw e;
+
+      // 3. Otherwise, use server proxy (e.g. on Vercel)
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        let errorMsg = `Server error (${response.status}).`;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch (e) {}
+        
+        // If it's a 503 or 429 from proxy, retry
+        if ((response.status === 503 || response.status === 429 || errorMsg.includes("high demand")) && i < retries - 1) {
+          await delay(Math.pow(2, i) * 1000);
+          continue;
+        }
+
+        // Add helpful context for common errors
+        if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
+          // Detailed instructions already in errorMsg
+        }
+        
+        if (response.status === 503 || errorMsg.includes("high demand")) {
+          errorMsg = "Server AI sedang sibuk (High Demand). Silakan coba klik tombol Saran AI lagi dalam beberapa detik.";
+        }
+        
+        throw new Error(errorMsg);
       }
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || "AI Proxy Error");
+      return data;
+    } catch (error: any) {
+      if (i === retries - 1) throw error;
+      await delay(Math.pow(2, i) * 1000);
     }
   }
-
-  // 2. If we are in GAS environment, we MUST use direct client-side call
-  // because the server proxy won't be available.
-  // @ts-ignore
-  const isGas = typeof google !== 'undefined' && google.script && google.script.run;
-  
-  if (isGas) {
-    if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Pastikan sudah diatur di Script Properties.");
-    const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
-    const response = await ai.models.generateContent({
-      model: params.model || "gemini-3-flash-preview",
-      contents: params.contents,
-      config: params.config
-    });
-    return { success: true, text: response.text };
-  }
-
-  // 3. Otherwise, use server proxy for better reliability and security (e.g. on Vercel)
-  const response = await fetch("/api/ai/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
-
-  if (!response.ok) {
-    let errorMsg = `Server error (${response.status}).`;
-    try {
-      const errorData = await response.json();
-      errorMsg = errorData.message || errorMsg;
-    } catch (e) {
-      // Fallback if not JSON
-    }
-    
-    // Add helpful context for common errors
-    if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
-      // The server now provides detailed instructions in errorMsg
-    }
-    
-    console.error("AI Proxy Error:", errorMsg);
-    throw new Error(errorMsg);
-  }
-
-  const data = await response.json();
-  if (!data.success) throw new Error(data.message || "AI Proxy Error");
-  return data;
+  throw new Error("Gagal menghubungi AI setelah beberapa kali percobaan.");
 };
 
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
-  const model = "gemini-flash-latest";
+  const model = "gemini-3-flash-preview";
   const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. Berikan dalam format JSON array of strings.`;
   
   try {
@@ -138,7 +163,7 @@ export const suggestObjectives = async (
   learningModel: string,
   applyLoveCurriculum: boolean
 ) => {
-  const model = "gemini-flash-latest";
+  const model = "gemini-3-flash-preview";
   const loveContext = applyLoveCurriculum 
     ? "Sertakan juga pendekatan Kurikulum Berbasis Cinta (nilai kasih sayang, empati, humanis)." 
     : "";
@@ -165,7 +190,7 @@ Berikan dalam format JSON array of strings.`;
 };
 
 export const generateModulAjar = async (data: ModuleData) => {
-  const model = "gemini-flash-latest";
+  const model = "gemini-3-flash-preview";
   
   const prompt = `
 Tugas: Buatlah Modul Ajar Kurikulum Merdeka yang SISTEMATIS, LOGIS, dan PROFESIONAL.

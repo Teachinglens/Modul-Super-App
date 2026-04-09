@@ -42,7 +42,7 @@ app.post("/api/ai/generate", async (req, res) => {
     
     // Use the correct Gemini 3 SDK pattern
     const response = await ai.models.generateContent({
-      model: model || "gemini-flash-latest",
+      model: model || "gemini-3-flash-preview",
       contents: contents,
       config: config
     });
@@ -57,13 +57,19 @@ app.post("/api/ai/generate", async (req, res) => {
     
     // Provide more specific error messages
     let errorMessage = err.message || "Failed to generate content from Gemini";
+    let statusCode = 500;
+
     if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("400")) {
       errorMessage = "GEMINI_API_KEY tidak valid atau tidak memiliki akses ke model ini. Silakan periksa kembali API Key Anda di Dashboard Vercel/Settings.";
     } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
       errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti.";
+      statusCode = 429;
+    } else if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
+      errorMessage = "Server AI sedang mengalami beban tinggi (High Demand). Silakan coba lagi dalam beberapa saat.";
+      statusCode = 503;
     }
     
-    res.status(500).json({ success: false, message: errorMessage });
+    res.status(statusCode).json({ success: false, message: errorMessage });
   }
 });
 
