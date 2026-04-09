@@ -19,23 +19,30 @@ app.get("/api/ai/status", (req, res) => {
 
 // Gemini AI Proxy Routes
 app.post("/api/ai/generate", async (req, res) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.API_KEY || "";
+  const rawKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.API_KEY || "";
+  const geminiApiKey = rawKey.trim();
+  
   if (!geminiApiKey) {
+    const isVercel = process.env.VERCEL === "1";
+    const envName = isVercel ? "Vercel" : "AI Studio/Local";
+    const fixSteps = isVercel 
+      ? "1. Buka Dashboard Vercel > Settings > Environment Variables\n2. Tambahkan GEMINI_API_KEY\n3. Klik Save\n4. Lakukan REDEPLOY di tab Deployments."
+      : "Pastikan GEMINI_API_KEY sudah ada di file .env atau environment variable sistem Anda.";
+      
     return res.status(500).json({ 
       success: false, 
-      message: "GEMINI_API_KEY belum diatur di server Vercel. Silakan tambahkan di Settings > Environment Variables, lalu lakukan REDEPLOY proyek Anda." 
+      message: `GEMINI_API_KEY belum diatur di ${envName}.\n\nCARA MEMPERBAIKI:\n${fixSteps}` 
     });
   }
 
   const { model, contents, config } = req.body;
   try {
     const { GoogleGenAI } = await import("@google/genai");
-    const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
+    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
     
-    // Ensure contents is in the right format for the SDK
-    // The SDK expects contents to be a string or an array of parts/contents
-    const response = await genAI.models.generateContent({
-      model: model || "gemini-3-flash-preview",
+    // Use the correct Gemini 3 SDK pattern
+    const response = await ai.models.generateContent({
+      model: model || "gemini-flash-latest",
       contents: contents,
       config: config
     });
@@ -50,8 +57,8 @@ app.post("/api/ai/generate", async (req, res) => {
     
     // Provide more specific error messages
     let errorMessage = err.message || "Failed to generate content from Gemini";
-    if (errorMessage.includes("API_KEY_INVALID")) {
-      errorMessage = "GEMINI_API_KEY tidak valid. Silakan periksa kembali di Settings.";
+    if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("400")) {
+      errorMessage = "GEMINI_API_KEY tidak valid atau tidak memiliki akses ke model ini. Silakan periksa kembali API Key Anda di Dashboard Vercel/Settings.";
     } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
       errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti.";
     }

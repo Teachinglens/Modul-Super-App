@@ -3,6 +3,16 @@ import { ModuleData } from "../types";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
 
+// Initialize AI client for frontend use if key is available
+let frontendAi: any = null;
+if (apiKey) {
+  try {
+    frontendAi = new GoogleGenAI({ apiKey: apiKey.trim() });
+  } catch (e) {
+    console.error("Failed to initialize frontend AI:", e);
+  }
+}
+
 // Helper to extract JSON from a string that might contain extra text
 const extractJson = (text: string) => {
   try {
@@ -32,21 +42,45 @@ const extractJson = (text: string) => {
   }
 };
 
-// Helper to call AI via proxy if needed
+// Helper to call AI via proxy or directly
 const callAi = async (params: any) => {
-  // If we are in GAS environment, we MUST use direct client-side call
+  // 1. Try direct frontend call first if key is available (Recommended by SKILL.md)
+  if (frontendAi) {
+    try {
+      const response = await frontendAi.models.generateContent({
+        model: params.model || "gemini-3-flash-preview",
+        contents: params.contents,
+        config: params.config
+      });
+      if (response && response.text) {
+        return { success: true, text: response.text };
+      }
+    } catch (e: any) {
+      console.warn("Direct frontend AI call failed, falling back to proxy/GAS:", e.message);
+      // If it's an auth error, we might want to try the proxy which might have a different key
+      if (!e.message.includes("API_KEY_INVALID") && !e.message.includes("400")) {
+        throw e;
+      }
+    }
+  }
+
+  // 2. If we are in GAS environment, we MUST use direct client-side call
   // because the server proxy won't be available.
   // @ts-ignore
   const isGas = typeof google !== 'undefined' && google.script && google.script.run;
   
   if (isGas) {
-    if (!apiKey) throw new Error("GEMINI_API_KEY is missing in GAS environment.");
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent(params);
+    if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Pastikan sudah diatur di Script Properties.");
+    const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
+    const response = await ai.models.generateContent({
+      model: params.model || "gemini-3-flash-preview",
+      contents: params.contents,
+      config: params.config
+    });
     return { success: true, text: response.text };
   }
 
-  // Otherwise, use server proxy for better reliability and security
+  // 3. Otherwise, use server proxy for better reliability and security (e.g. on Vercel)
   const response = await fetch("/api/ai/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -64,7 +98,7 @@ const callAi = async (params: any) => {
     
     // Add helpful context for common errors
     if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
-      errorMsg = "GEMINI_API_KEY belum diatur di server Vercel. \n\nCARA MEMPERBAIKI:\n1. Buka Dashboard Vercel Anda\n2. Buka Settings > Environment Variables\n3. Tambahkan GEMINI_API_KEY dengan nilai API Key Anda\n4. Klik Save\n5. Buka tab Deployments dan lakukan REDEPLOY (Wajib agar perubahan terbaca).";
+      // The server now provides detailed instructions in errorMsg
     }
     
     console.error("AI Proxy Error:", errorMsg);
@@ -77,7 +111,7 @@ const callAi = async (params: any) => {
 };
 
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-flash-latest";
   const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. Berikan dalam format JSON array of strings.`;
   
   try {
@@ -104,7 +138,7 @@ export const suggestObjectives = async (
   learningModel: string,
   applyLoveCurriculum: boolean
 ) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-flash-latest";
   const loveContext = applyLoveCurriculum 
     ? "Sertakan juga pendekatan Kurikulum Berbasis Cinta (nilai kasih sayang, empati, humanis)." 
     : "";
@@ -131,7 +165,7 @@ Berikan dalam format JSON array of strings.`;
 };
 
 export const generateModulAjar = async (data: ModuleData) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-flash-latest";
   
   const prompt = `
 Tugas: Buatlah Modul Ajar Kurikulum Merdeka yang SISTEMATIS, LOGIS, dan PROFESIONAL.

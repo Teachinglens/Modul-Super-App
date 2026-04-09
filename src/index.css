@@ -82,8 +82,8 @@
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 100% !important; /* Let the library handle the width based on margins */
-  padding: 0 !important; /* Remove internal padding, library adds 2.5cm margin */
+  width: 794px !important; /* Fixed A4 width for consistent scaling */
+  padding: 0 !important; /* Remove internal padding, library adds margins */
 }
 
 /* Ensure page breaks don't cut off content */

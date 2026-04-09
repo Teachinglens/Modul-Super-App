@@ -1093,7 +1093,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: [25, 25, 25, 25], // 2.5cm margins on all sides
+        margin: [20, 25, 25, 25] as [number, number, number, number], // Top: 2.0cm, Right: 2.5cm, Bottom: 2.5cm, Left: 2.5cm
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
