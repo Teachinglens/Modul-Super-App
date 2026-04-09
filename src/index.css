@@ -70,7 +70,7 @@
 .pdf-page {
   width: 794px; /* Exactly A4 width at 96dpi */
   min-height: 1123px;
-  padding: 94px; /* Exactly 2.5cm at 96dpi */
+  padding: 76px 94px 94px 94px; /* Top: 2.0cm, others: 2.5cm at 96dpi */
   margin: 0 auto;
   background: white;
   box-sizing: border-box;
@@ -83,7 +83,7 @@
   border: none !important;
   margin: 0 !important;
   width: 794px !important; /* Fixed A4 width for consistent scaling */
-  padding: 0 !important; /* Remove internal padding, library adds margins */
+  overflow: hidden !important;
 }
 
 /* Ensure page breaks don't cut off content */

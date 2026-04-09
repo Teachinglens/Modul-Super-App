@@ -1093,7 +1093,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: [20, 25, 25, 25] as [number, number, number, number], // Top: 2.0cm, Right: 2.5cm, Bottom: 2.5cm, Left: 2.5cm
+        margin: 0, 
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
@@ -1104,7 +1104,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
           logging: false
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy'] as any }
+        pagebreak: { mode: ['css'] as any }
       };
 
       // Use html2pdf for better page break handling and layout
@@ -1861,44 +1861,44 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                           <table className="w-full border-none text-base border-collapse">
                             <tbody>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Nama Guru</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.teacherName}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Nama Guru</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.teacherName}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">NIP</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.nip || "-"}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">NIP</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.nip || "-"}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Nama Sekolah</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.schoolName}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Nama Sekolah</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.schoolName}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Mata Pelajaran</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.subject}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Mata Pelajaran</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.subject}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Kelas / Fase</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.className} / {formData.phase}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Kelas / Fase</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.className} / {formData.phase}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Materi Pokok</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.topic}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Materi Pokok</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.topic}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Alokasi Waktu</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.allocation}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Alokasi Waktu</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.allocation}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top border-none!">Tahun Pelajaran</td>
-                                <td className="py-1 w-[20px] align-top border-none! text-center">:</td>
-                                <td className="py-1 align-top border-none!">{formData.year}</td>
+                                <td className="font-bold py-1 w-[180px] align-top !border-none">Tahun Pelajaran</td>
+                                <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
+                                <td className="py-1 align-top !border-none">{formData.year}</td>
                               </tr>
                             </tbody>
                           </table>
