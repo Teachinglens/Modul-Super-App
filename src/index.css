@@ -173,11 +173,20 @@
 .prose ol, .prose ul {
   padding-left: 1.5rem !important;
   margin-left: 0 !important;
+  list-style-position: outside !important;
 }
 
 .prose li {
+  display: list-item !important;
   padding-left: 0.5rem !important;
   margin-bottom: 0.25rem !important;
+}
+
+/* Ensure paragraphs inside list items don't add extra vertical space and stay aligned with markers */
+.prose li > p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  display: inline !important;
 }
 
 /* Specific spacing for signatures */
