@@ -115,8 +115,19 @@
   page-break-after: avoid;
   break-after: avoid;
   color: #0f172a !important;
-  margin-top: 1.25rem !important;
-  margin-bottom: 0.75rem !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Add the blue accent border to section headers like in the image */
+.prose h3 {
+  border-left: 4px solid #2563eb !important;
+  padding-left: 12px !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.025em !important;
 }
 
 .page-header-container {
@@ -132,38 +143,44 @@
 /* Typography Overrides for PDF - Matching Preview Density */
 .prose {
   font-size: 11pt !important;
-  line-height: 1.5 !important;
+  line-height: 1.6 !important;
   text-align: left;
-  --tw-prose-body: #334155;
+  --tw-prose-body: #475569;
   --tw-prose-headings: #0f172a;
-  --tw-prose-bold: #0f172a;
+  --tw-prose-bold: #1e293b;
+}
+
+.prose p {
+  margin-bottom: 1rem !important;
 }
 
 .prose table {
   width: 100% !important;
   border-collapse: collapse !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.5rem !important;
   table-layout: auto !important;
 }
 
 .prose th, .prose td {
   border: 1px solid #e2e8f0 !important;
-  padding: 6px !important;
+  padding: 8px !important;
   text-align: left !important;
   word-wrap: break-word !important;
 }
 
-/* Fix PDF list alignment */
+/* Fix PDF list alignment to match the image */
 .prose ol, .prose ul {
-  padding-left: 1.5rem !important;
+  padding-left: 1.75rem !important;
   margin-left: 0 !important;
+  margin-bottom: 1.25rem !important;
   list-style-position: outside !important;
 }
 
 .prose li {
   display: list-item !important;
-  padding-left: 0.5rem !important;
-  margin-bottom: 0.25rem !important;
+  padding-left: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+  color: #475569 !important;
 }
 
 .prose li > p {
