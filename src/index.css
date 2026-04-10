@@ -77,17 +77,19 @@
   position: relative;
   color: #1e293b !important;
   font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .generating-pdf {
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 100% !important;
-  max-width: 160mm !important; /* Content width only (210mm - 25mm - 25mm) */
+  width: 160mm !important; /* Content width only (210mm - 25mm - 25mm) */
   padding: 0 !important;
   overflow: visible !important;
   min-height: auto !important;
+  background: white !important;
+  max-width: none !important;
 }
 
 /* Ensure sections with backgrounds/borders are handled gracefully */

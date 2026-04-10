@@ -75,7 +75,7 @@ const MarkdownRenderer = ({ children }: { children: string }) => (
     components={{
       ul: ({ ...props }) => <ul className="list-disc mb-4 pl-5 marker:text-slate-900" {...props} />,
       ol: ({ ...props }) => <ol className="list-decimal mb-4 pl-5 marker:text-slate-900" {...props} />,
-      li: ({ ...props }) => <li className="mb-1 pl-1 text-[11.5pt]" {...props} />,
+      li: ({ ...props }) => <li className="mb-1 text-[11.5pt]" {...props} />,
       p: ({ ...props }) => <p className="mb-3 text-[11.5pt]" {...props} />,
     }}
   >
@@ -1109,7 +1109,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: 25, // 25mm = 2.5cm on all sides
+        margin: [25, 25, 25, 25] as [number, number, number, number],
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
@@ -1117,10 +1117,11 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
           useCORS: true, 
           letterRendering: true,
           backgroundColor: '#ffffff',
-          logging: false
+          logging: false,
+          width: 605 // Force width to match 160mm at 96dpi for consistency
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css'] as any }
+        pagebreak: { mode: ['css', 'legacy'] as any }
       };
 
       // Use html2pdf for better page break handling and layout
