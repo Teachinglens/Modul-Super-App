@@ -87,27 +87,26 @@
   overflow: visible !important;
 }
 
-/* Ensure sections with backgrounds/borders don't break poorly */
-.generating-pdf section,
-.generating-pdf .bg-slate-50,
-.generating-pdf .bg-white {
-  page-break-inside: avoid;
-  break-inside: avoid;
-}
-
-/* Ensure page breaks don't cut off content */
-.prose section {
-  margin-bottom: 2rem;
-  display: block;
-  width: 100%;
-}
-
-.prose p, .prose li {
+/* Ensure sections with backgrounds/borders are handled gracefully */
+.generating-pdf section {
   page-break-inside: auto;
   break-inside: auto;
+  margin-bottom: 1.5rem;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 8px;
+  padding: 1rem !important;
+  background-color: #f8fafc !important;
 }
 
-.prose tr {
+.generating-pdf .bg-white {
+  background-color: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  border-radius: 8px;
+  padding: 1rem !important;
+}
+
+/* Ensure page breaks don't cut off content in the middle of a block */
+.prose p, .prose li, .prose h1, .prose h2, .prose h3, .prose tr {
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -115,11 +114,9 @@
 .prose h1, .prose h2, .prose h3 {
   page-break-after: avoid;
   break-after: avoid;
-  page-break-inside: avoid;
-  break-inside: avoid;
   color: #0f172a !important;
-  margin-top: 1.5rem !important;
-  margin-bottom: 1rem !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 .page-header-container {
@@ -127,12 +124,15 @@
   break-inside: avoid;
   display: block;
   width: 100%;
+  border-bottom: 2px solid #1e293b !important;
+  margin-bottom: 2rem !important;
+  padding-bottom: 1rem !important;
 }
 
-/* Typography Overrides for PDF */
+/* Typography Overrides for PDF - Matching Preview Density */
 .prose {
-  font-size: 12pt !important;
-  line-height: 1.6 !important;
+  font-size: 11pt !important;
+  line-height: 1.5 !important;
   text-align: left;
   --tw-prose-body: #334155;
   --tw-prose-headings: #0f172a;
@@ -143,12 +143,12 @@
   width: 100% !important;
   border-collapse: collapse !important;
   margin-bottom: 1rem !important;
-  table-layout: fixed !important;
+  table-layout: auto !important;
 }
 
 .prose th, .prose td {
   border: 1px solid #e2e8f0 !important;
-  padding: 8px !important;
+  padding: 6px !important;
   text-align: left !important;
   word-wrap: break-word !important;
 }
