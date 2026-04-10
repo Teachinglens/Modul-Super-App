@@ -70,38 +70,57 @@
 .pdf-page {
   width: 794px; /* Exactly A4 width at 96dpi */
   min-height: 1123px;
-  padding: 76px 94px 94px 94px; /* Top: 2.0cm, others: 2.5cm at 96dpi */
+  padding: 76px 94px 94px 94px; /* Top: 2.0cm (76px), others: 2.5cm (94px) at 96dpi */
   margin: 0 auto;
   background: white;
   box-sizing: border-box;
   position: relative;
-  color: #334155 !important;
+  color: #000 !important;
+  font-family: "Times New Roman", Times, serif !important;
 }
 
 .generating-pdf {
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 794px !important; /* Fixed A4 width for consistent scaling */
-  overflow: hidden !important;
+  width: 794px !important;
+  overflow: visible !important;
+}
+
+/* Remove backgrounds and borders that cause issues with page breaks in PDF */
+.generating-pdf .bg-slate-50,
+.generating-pdf .bg-white,
+.generating-pdf .rounded-lg,
+.generating-pdf .border-slate-100 {
+  background-color: transparent !important;
+  border: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 /* Ensure page breaks don't cut off content */
 .prose section {
   page-break-inside: auto;
   break-inside: auto;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   display: block;
   width: 100%;
 }
 
-/* Allow long sections to break if they exceed one page, but avoid breaking inside paragraphs/lists */
+/* Allow long sections to break if they exceed one page */
 .prose .allow-break {
   page-break-inside: auto !important;
   break-inside: auto !important;
 }
 
-.prose p, .prose li, .prose tr {
+.prose p, .prose li {
+  page-break-inside: auto;
+  break-inside: auto;
+  orphans: 3;
+  widows: 3;
+}
+
+.prose tr {
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -111,9 +130,9 @@
   break-after: avoid;
   page-break-inside: avoid;
   break-inside: avoid;
-  color: #0f172a !important;
-  margin-top: 1.5rem !important;
-  margin-bottom: 1rem !important;
+  color: #000 !important;
+  margin-top: 1.2rem !important;
+  margin-bottom: 0.8rem !important;
 }
 
 .page-header-container {
@@ -123,70 +142,46 @@
   width: 100%;
 }
 
-/* Force page break for major sections only if explicitly needed */
-.section-break {
-  page-break-before: always !important;
-  break-before: page !important;
-  margin-top: 0 !important;
-  display: block !important;
-  width: 100% !important;
-}
-
-/* Typography Overrides to avoid oklch in html2canvas */
+/* Typography Overrides for PDF */
 .prose {
   font-size: 12pt !important;
-  line-height: 1.6 !important;
-  --tw-prose-body: #334155;
-  --tw-prose-headings: #0f172a;
-  --tw-prose-lead: #475569;
-  --tw-prose-links: #0f172a;
-  --tw-prose-bold: #0f172a;
-  --tw-prose-counters: #64748b;
-  --tw-prose-bullets: #cbd5e1;
-  --tw-prose-hr: #e2e8f0;
-  --tw-prose-quotes: #0f172a;
-  --tw-prose-quote-borders: #e2e8f0;
-  --tw-prose-captions: #64748b;
-  --tw-prose-code: #0f172a;
-  --tw-prose-pre-code: #e2e8f0;
-  --tw-prose-pre-bg: #1e293b;
-  --tw-prose-th-borders: #cbd5e1;
-  --tw-prose-td-borders: #e2e8f0;
+  line-height: 1.5 !important;
+  text-align: justify;
+  --tw-prose-body: #000;
+  --tw-prose-headings: #000;
+  --tw-prose-bold: #000;
 }
 
-/* Table styling for PDF */
 .prose table {
   width: 100% !important;
   border-collapse: collapse !important;
   margin-bottom: 1rem !important;
-  table-layout: fixed !important;
+  table-layout: auto !important;
 }
 
 .prose th, .prose td {
-  border: 1px solid #e2e8f0 !important;
-  padding: 8px !important;
+  border: 1px solid #000 !important;
+  padding: 6px !important;
   text-align: left !important;
   word-wrap: break-word !important;
 }
 
 /* Fix PDF list alignment */
 .prose ol, .prose ul {
-  padding-left: 1.5rem !important;
+  padding-left: 1.2rem !important;
   margin-left: 0 !important;
   list-style-position: outside !important;
 }
 
 .prose li {
   display: list-item !important;
-  padding-left: 0.5rem !important;
-  margin-bottom: 0.25rem !important;
+  padding-left: 0.3rem !important;
+  margin-bottom: 0.2rem !important;
 }
 
-/* Ensure paragraphs inside list items don't add extra vertical space and stay aligned with markers */
 .prose li > p {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  display: inline !important;
+  margin: 0 !important;
+  display: inline;
 }
 
 /* Specific spacing for signatures */
