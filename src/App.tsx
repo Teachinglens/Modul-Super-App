@@ -735,7 +735,7 @@ const Register = ({ onToggleLogin }: { onToggleLogin: () => void }) => {
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700">Kode Aktivasi / Lisensi</label>
               <a 
-                href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20saya%20ingin%20mendapatkan%20kode%20aktivasi%20Modul%20Super%20App.`}
+                href={`https://wa.me/6285716555746?text=Halo%20Admin,%20saya%20ingin%20mendapatkan%20kode%20aktivasi%20Modul%20Super%20App.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-blue-600 hover:underline font-bold"
@@ -1087,7 +1087,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
   const downloadPDF = async () => {
     if (user.package === "basic" && (user.downloadCount || 0) >= 25) {
       alert("Batas download paket Basic (25 kali) telah tercapai. Silakan hubungi Admin via WhatsApp untuk upgrade ke paket Premium agar bisa download tanpa batas.");
-      window.open(`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20kuota%20download%20Basic%20saya%20sudah%20habis.%20Saya%20ingin%20upgrade%20ke%20Premium.`, '_blank');
+      window.open(`https://wa.me/6285716555746?text=Halo%20Admin,%20kuota%20download%20Basic%20saya%20sudah%20habis.%20Saya%20ingin%20upgrade%20ke%20Premium.`, '_blank');
       return;
     }
 
@@ -1591,7 +1591,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                         </div>
                         {user.package !== 'premium' && (
                           <a 
-                            href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20saya%20ingin%20upgrade%20akun%20Modul%20Super%20App%20saya%20ke%20Premium.`}
+                            href={`https://wa.me/6285716555746?text=Halo%20Admin,%20saya%20ingin%20upgrade%20akun%20Modul%20Super%20App%20saya%20ke%20Premium.`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
