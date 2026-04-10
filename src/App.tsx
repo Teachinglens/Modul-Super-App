@@ -70,6 +70,19 @@ const apiCall = async (endpoint: string, options?: RequestInit): Promise<any> =>
 
 // --- Components ---
 
+const MarkdownRenderer = ({ children }: { children: string }) => (
+  <ReactMarkdown
+    components={{
+      ul: ({ ...props }) => <ul className="list-disc mb-4" {...props} />,
+      ol: ({ ...props }) => <ol className="list-decimal mb-4" {...props} />,
+      li: ({ ...props }) => <li className="mb-1" {...props} />,
+      p: ({ ...props }) => <p className="mb-3" {...props} />,
+    }}
+  >
+    {children}
+  </ReactMarkdown>
+);
+
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -722,7 +735,7 @@ const Register = ({ onToggleLogin }: { onToggleLogin: () => void }) => {
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700">Kode Aktivasi / Lisensi</label>
               <a 
-                href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6281234567890'}?text=Halo%20Admin,%20saya%20ingin%20mendapatkan%20kode%20aktivasi%20Modul%20Super%20App.`}
+                href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20saya%20ingin%20mendapatkan%20kode%20aktivasi%20Modul%20Super%20App.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-blue-600 hover:underline font-bold"
@@ -1074,7 +1087,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
   const downloadPDF = async () => {
     if (user.package === "basic" && (user.downloadCount || 0) >= 25) {
       alert("Batas download paket Basic (25 kali) telah tercapai. Silakan hubungi Admin via WhatsApp untuk upgrade ke paket Premium agar bisa download tanpa batas.");
-      window.open(`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6281234567890'}?text=Halo%20Admin,%20kuota%20download%20Basic%20saya%20sudah%20habis.%20Saya%20ingin%20upgrade%20ke%20Premium.`, '_blank');
+      window.open(`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20kuota%20download%20Basic%20saya%20sudah%20habis.%20Saya%20ingin%20upgrade%20ke%20Premium.`, '_blank');
       return;
     }
 
@@ -1086,6 +1099,9 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     
     setIsDownloading(true);
     element.classList.add("generating-pdf");
+    
+    // Small delay to ensure styles are applied before capturing
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     try {
       console.log("Starting PDF generation with html2pdf...");
@@ -1575,7 +1591,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                         </div>
                         {user.package !== 'premium' && (
                           <a 
-                            href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6281234567890'}?text=Halo%20Admin,%20saya%20ingin%20upgrade%20akun%20Modul%20Super%20App%20saya%20ke%20Premium.`}
+                            href={`https://wa.me/${import.meta.env.VITE_ADMIN_WHATSAPP || '6285716555746'}?text=Halo%20Admin,%20saya%20ingin%20upgrade%20akun%20Modul%20Super%20App%20saya%20ke%20Premium.`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
@@ -1849,11 +1865,11 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       className={`pdf-page shadow-2xl border border-slate-200 prose prose-slate max-w-none text-[12pt] leading-relaxed ${user.package === 'basic' ? 'select-none' : ''}`}
                     >
                     <div className="page-header-container">
-                      <div className="text-center border-b-2 border-slate-800 pb-6 mb-8">
-                        <h1 className="text-2xl font-bold uppercase m-0 tracking-wider">MODUL AJAR {formData.subject}</h1>
-                        <h2 className="text-lg font-bold uppercase mt-1 mb-0 opacity-80">KURIKULUM MERDEKA - FASE {formData.phase} / {formData.className}</h2>
-                        <p className="text-lg font-semibold m-0 mt-3 text-slate-700">{formData.schoolName}</p>
-                        <p className="text-sm font-medium m-0 mt-1 italic text-slate-500">Tahun Pelajaran: {formData.year}</p>
+                      <div className="text-center border-b-4 border-slate-900 pb-8 mb-10">
+                        <h1 className="text-3xl font-bold uppercase m-0 tracking-widest">MODUL AJAR {formData.subject}</h1>
+                        <h2 className="text-xl font-bold uppercase mt-2 mb-0">KURIKULUM MERDEKA - FASE {formData.phase} / {formData.className}</h2>
+                        <p className="text-xl font-bold m-0 mt-4 text-slate-800">{formData.schoolName}</p>
+                        <p className="text-base font-semibold m-0 mt-2 text-slate-600">Tahun Pelajaran: {formData.year}</p>
                       </div>
 
                       <section className="mb-8">
@@ -1861,42 +1877,42 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                           <table className="w-full border-none text-base border-collapse">
                             <tbody>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Nama Guru</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Nama Guru</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.teacherName}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">NIP</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">NIP</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.nip || "-"}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Nama Sekolah</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Nama Sekolah</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.schoolName}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Mata Pelajaran</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Mata Pelajaran</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.subject}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Kelas / Fase</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Kelas / Fase</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.className} / {formData.phase}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Materi Pokok</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Materi Pokok</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.topic}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Alokasi Waktu</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Alokasi Waktu</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.allocation}</td>
                               </tr>
                               <tr>
-                                <td className="font-bold py-1 w-[180px] align-top !border-none">Tahun Pelajaran</td>
+                                <td className="font-bold py-1 w-[200px] align-top !border-none">Tahun Pelajaran</td>
                                 <td className="py-1 w-[20px] align-top !border-none text-center">:</td>
                                 <td className="py-1 align-top !border-none">{formData.year}</td>
                               </tr>
@@ -1909,50 +1925,48 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">I. PROFIL PELAJAR PANCASILA</h3>
                     <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
-                      <ReactMarkdown>{generatedModule.profilPancasila}</ReactMarkdown>
+                      <MarkdownRenderer>{generatedModule.profilPancasila}</MarkdownRenderer>
                     </div>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">II. SARANA DAN PRASARANA</h3>
-                    <ReactMarkdown>{generatedModule.saranaPrasarana}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.saranaPrasarana}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">III. TARGET PESERTA DIDIK</h3>
-                    <ReactMarkdown>{generatedModule.targetPesertaDidik}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.targetPesertaDidik}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">IV. MODEL & METODE PEMBELAJARAN</h3>
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <p className="m-0 font-bold">Model: {formData.model}</p>
-                      <ReactMarkdown>{generatedModule.modelMetode}</ReactMarkdown>
+                      <MarkdownRenderer>{generatedModule.modelMetode}</MarkdownRenderer>
                     </div>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">V. TUJUAN PEMBELAJARAN</h3>
                     <div className="bg-[#f8fbff] p-4 rounded-lg border border-[#eef4ff]">
-                      <ReactMarkdown>{generatedModule.tujuanPembelajaran}</ReactMarkdown>
+                      <MarkdownRenderer>{generatedModule.tujuanPembelajaran}</MarkdownRenderer>
                     </div>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VI. PEMAHAMAN BERMAKNA</h3>
-                    <ReactMarkdown>{generatedModule.pemahamanBermakna}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.pemahamanBermakna}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VII. PERTANYAAN PEMANTIK</h3>
-                    <ReactMarkdown>{generatedModule.pertanyaanPemantik}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.pertanyaanPemantik}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8 allow-break">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">VIII. KEGIATAN PEMBELAJARAN</h3>
-                    <div className="prose prose-slate max-w-none prose-headings:text-blue-600 prose-headings:font-bold prose-p:text-slate-600 prose-strong:text-slate-800 prose-table:border prose-table:border-slate-200 prose-th:bg-slate-50 prose-th:p-2 prose-td:p-2 prose-td:border prose-td:border-slate-100">
-                      <ReactMarkdown>{generatedModule.kegiatanPembelajaran}</ReactMarkdown>
-                    </div>
+                    <MarkdownRenderer>{generatedModule.kegiatanPembelajaran}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
@@ -1960,27 +1974,27 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     <div className="space-y-4">
                       <div className="p-3 bg-slate-50 rounded-lg">
                         <h4 className="font-bold m-0 text-sm">Asesmen Diagnostik</h4>
-                        <ReactMarkdown>{generatedModule.asesmenDiagnostik}</ReactMarkdown>
+                        <MarkdownRenderer>{generatedModule.asesmenDiagnostik}</MarkdownRenderer>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-lg">
                         <h4 className="font-bold m-0 text-sm">Asesmen Formatif</h4>
-                        <ReactMarkdown>{generatedModule.asesmenFormatif}</ReactMarkdown>
+                        <MarkdownRenderer>{generatedModule.asesmenFormatif}</MarkdownRenderer>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-lg">
                         <h4 className="font-bold m-0 text-sm">Asesmen Sumatif</h4>
-                        <ReactMarkdown>{generatedModule.asesmenSumatif}</ReactMarkdown>
+                        <MarkdownRenderer>{generatedModule.asesmenSumatif}</MarkdownRenderer>
                       </div>
                     </div>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">X. PENGAYAAN DAN REMEDIAL</h3>
-                    <ReactMarkdown>{generatedModule.pengayaanRemedial}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.pengayaanRemedial}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XI. REFLEKSI GURU & PESERTA DIDIK</h3>
-                    <ReactMarkdown>{generatedModule.refleksi}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.refleksi}</MarkdownRenderer>
                   </section>
 
                   <section className="mb-8">
