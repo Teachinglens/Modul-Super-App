@@ -2003,26 +2003,20 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     <MarkdownRenderer>{generatedModule.lampiran}</MarkdownRenderer>
                   </section>
 
-                  {/* Signature Table for better PDF stability */}
+                  {/* Signature Block - Standard Indonesian Format */}
                   <div className="mt-16 w-full">
                     <table className="w-full border-none border-collapse">
                       <tbody>
                         <tr>
-                          <td className="w-1/2 text-center align-top !border-none pb-20">
-                            <p className="m-0">Mengetahui,</p>
-                            <p className="m-0">Kepala Sekolah</p>
-                          </td>
-                          <td className="w-1/2 text-center align-top !border-none pb-20">
-                            <p className="m-0">{formData.location}, {formData.date}</p>
-                            <p className="m-0">Guru Mata Pelajaran</p>
-                          </td>
-                        </tr>
-                        <tr>
                           <td className="w-1/2 text-center align-top !border-none">
+                            <p className="m-0">Mengetahui,</p>
+                            <p className="m-0 mb-20">Kepala Sekolah</p>
                             <p className="font-bold underline m-0 signature-name">{formData.principalName || "................................................"}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.principalNip || "................................................"}</p>
                           </td>
                           <td className="w-1/2 text-center align-top !border-none">
+                            <p className="m-0">{formData.location}, {formData.date}</p>
+                            <p className="m-0 mb-20">Guru Mata Pelajaran</p>
                             <p className="font-bold underline m-0 signature-name">{formData.teacherName}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.nip || "-"}</p>
                           </td>

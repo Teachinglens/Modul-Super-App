@@ -222,11 +222,13 @@
 
 /* Specific spacing for signatures */
 .signature-name {
-  margin-bottom: 2px !important;
-  line-height: 1 !important;
+  margin-bottom: 4px !important;
+  line-height: 1.4 !important;
+  display: block !important;
 }
 
 .signature-nip {
   margin-top: 0 !important;
-  line-height: 1 !important;
+  line-height: 1.4 !important;
+  display: block !important;
 }
