@@ -83,7 +83,8 @@
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 160mm !important; /* Content width only (210mm - 25mm - 25mm) */
+  width: 100% !important;
+  max-width: 160mm !important; /* Content width only (210mm - 25mm - 25mm) */
   padding: 0 !important;
   overflow: visible !important;
   min-height: auto !important;
@@ -100,12 +101,15 @@
 
 .generating-pdf section.bg-slate-50,
 .generating-pdf section.bg-white,
-.generating-pdf section.bg-\[\#f8fbff\] {
-  page-break-inside: avoid;
-  break-inside: avoid;
+.generating-pdf section.bg-\[\#f8fbff\],
+.generating-pdf .bg-white,
+.generating-pdf .bg-slate-50 {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
   border-radius: 8px;
   padding: 1.25rem !important;
   border: 1px solid #e2e8f0 !important;
+  display: block;
 }
 
 /* Ensure page breaks don't cut off content in the middle of a block */
@@ -178,28 +182,35 @@
 /* Fix PDF list alignment and bullets */
 .prose ul, .generating-pdf ul {
   list-style-type: disc !important;
-  padding-left: 1.25rem !important;
+  padding-left: 1.5rem !important;
   margin-left: 0 !important;
   margin-bottom: 1rem !important;
 }
 
 .prose ol, .generating-pdf ol {
   list-style-type: decimal !important;
-  padding-left: 1.25rem !important;
+  padding-left: 1.5rem !important;
   margin-left: 0 !important;
   margin-bottom: 1rem !important;
 }
 
 .prose li, .generating-pdf li {
-  margin-bottom: 0.4rem !important;
-  padding-left: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
   display: list-item !important;
   list-style-position: outside !important;
+  font-size: 11.5pt !important;
+  line-height: 1.6 !important;
 }
 
-.prose li::marker, .generating-pdf li::marker {
-  color: inherit !important;
-  font-weight: normal !important;
+/* Force markers to be normal size */
+.prose li::marker, .generating-pdf li::marker,
+.prose ol li::marker, .generating-pdf ol li::marker,
+.prose ul li::marker, .generating-pdf ul li::marker,
+.prose :where(ol > li)::marker,
+.prose :where(ul > li)::marker {
+  font-size: 11.5pt !important;
+  font-family: inherit !important;
+  color: #0f172a !important;
 }
 
 .prose li > p, .generating-pdf li > p {

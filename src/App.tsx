@@ -73,10 +73,10 @@ const apiCall = async (endpoint: string, options?: RequestInit): Promise<any> =>
 const MarkdownRenderer = ({ children }: { children: string }) => (
   <ReactMarkdown
     components={{
-      ul: ({ ...props }) => <ul className="list-disc mb-4" {...props} />,
-      ol: ({ ...props }) => <ol className="list-decimal mb-4" {...props} />,
-      li: ({ ...props }) => <li className="mb-1" {...props} />,
-      p: ({ ...props }) => <p className="mb-3" {...props} />,
+      ul: ({ ...props }) => <ul className="list-disc mb-4 pl-5 marker:text-slate-900" {...props} />,
+      ol: ({ ...props }) => <ol className="list-decimal mb-4 pl-5 marker:text-slate-900" {...props} />,
+      li: ({ ...props }) => <li className="mb-1 pl-1 text-[11.5pt]" {...props} />,
+      p: ({ ...props }) => <p className="mb-3 text-[11.5pt]" {...props} />,
     }}
   >
     {children}
@@ -2002,21 +2002,32 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     <MarkdownRenderer>{generatedModule.lampiran}</MarkdownRenderer>
                   </section>
 
-                  <div className="mt-16 grid grid-cols-2 gap-12 text-center">
-                    <div className="flex flex-col items-center">
-                      <p className="mb-4">Mengetahui,<br />Kepala Sekolah</p>
-                      <div className="mt-8">
-                        <p className="font-bold underline m-0 signature-name">{formData.principalName || "................................................"}</p>
-                        <p className="m-0 text-sm signature-nip">NIP. {formData.principalNip || "................................................"}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <p className="mb-4">{formData.location}, {formData.date}<br />Guru Mata Pelajaran</p>
-                      <div className="mt-8">
-                        <p className="font-bold underline m-0 signature-name">{formData.teacherName}</p>
-                        <p className="m-0 text-sm signature-nip">NIP. {formData.nip || "-"}</p>
-                      </div>
-                    </div>
+                  {/* Signature Table for better PDF stability */}
+                  <div className="mt-16 w-full">
+                    <table className="w-full border-none border-collapse">
+                      <tbody>
+                        <tr>
+                          <td className="w-1/2 text-center align-top !border-none pb-20">
+                            <p className="m-0">Mengetahui,</p>
+                            <p className="m-0">Kepala Sekolah</p>
+                          </td>
+                          <td className="w-1/2 text-center align-top !border-none pb-20">
+                            <p className="m-0">{formData.location}, {formData.date}</p>
+                            <p className="m-0">Guru Mata Pelajaran</p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="w-1/2 text-center align-top !border-none">
+                            <p className="font-bold underline m-0 signature-name">{formData.principalName || "................................................"}</p>
+                            <p className="m-0 text-sm signature-nip">NIP. {formData.principalNip || "................................................"}</p>
+                          </td>
+                          <td className="w-1/2 text-center align-top !border-none">
+                            <p className="font-bold underline m-0 signature-name">{formData.teacherName}</p>
+                            <p className="m-0 text-sm signature-nip">NIP. {formData.nip || "-"}</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
 
                   {generatedModule.lkpd && (
