@@ -1109,7 +1109,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const fileName = `Modul_Ajar_${(formData.topic || "Tanpa_Judul").replace(/\s+/g, "_")}.pdf`;
       
       const opt = {
-        margin: 0, 
+        margin: 25, // 25mm = 2.5cm on all sides
         filename: fileName,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
@@ -1999,7 +1999,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
 
                   <section className="mb-8">
                     <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XII. LAMPIRAN</h3>
-                    <ReactMarkdown>{generatedModule.lampiran}</ReactMarkdown>
+                    <MarkdownRenderer>{generatedModule.lampiran}</MarkdownRenderer>
                   </section>
 
                   <div className="mt-16 grid grid-cols-2 gap-12 text-center">
@@ -2023,7 +2023,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                     <section className="mt-16 pt-8 border-t-2 border-slate-200 allow-break">
                       <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
                       <div className="bg-white p-4 rounded-lg border border-slate-100">
-                        <ReactMarkdown>{generatedModule.lkpd}</ReactMarkdown>
+                        <MarkdownRenderer>{generatedModule.lkpd}</MarkdownRenderer>
                       </div>
                     </section>
                   )}

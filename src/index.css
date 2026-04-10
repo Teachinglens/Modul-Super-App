@@ -68,9 +68,9 @@
 
 /* PDF and A4 Paper Styling */
 .pdf-page {
-  width: 794px; /* Exactly A4 width at 96dpi */
-  min-height: 1123px;
-  padding: 76px 94px 94px 94px; /* Top: 2.0cm (76px), others: 2.5cm (94px) at 96dpi */
+  width: 210mm; /* A4 Width */
+  min-height: 297mm; /* A4 Height */
+  padding: 25mm; /* 2.5cm on all sides */
   margin: 0 auto;
   background: white !important;
   box-sizing: border-box;
@@ -83,8 +83,10 @@
   box-shadow: none !important;
   border: none !important;
   margin: 0 !important;
-  width: 794px !important;
+  width: 160mm !important; /* Content width only (210mm - 25mm - 25mm) */
+  padding: 0 !important;
   overflow: visible !important;
+  min-height: auto !important;
 }
 
 /* Ensure sections with backgrounds/borders are handled gracefully */
@@ -96,9 +98,9 @@
   width: 100%;
 }
 
-.generating-pdf .bg-slate-50,
-.generating-pdf .bg-white,
-.generating-pdf .bg-\[\#f8fbff\] {
+.generating-pdf section.bg-slate-50,
+.generating-pdf section.bg-white,
+.generating-pdf section.bg-\[\#f8fbff\] {
   page-break-inside: avoid;
   break-inside: avoid;
   border-radius: 8px;
