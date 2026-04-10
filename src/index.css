@@ -75,8 +75,8 @@
   background: white;
   box-sizing: border-box;
   position: relative;
-  color: #000 !important;
-  font-family: "Times New Roman", Times, serif !important;
+  color: #334155 !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
 .generating-pdf {
@@ -87,37 +87,24 @@
   overflow: visible !important;
 }
 
-/* Remove backgrounds and borders that cause issues with page breaks in PDF */
+/* Ensure sections with backgrounds/borders don't break poorly */
+.generating-pdf section,
 .generating-pdf .bg-slate-50,
-.generating-pdf .bg-white,
-.generating-pdf .rounded-lg,
-.generating-pdf .border-slate-100 {
-  background-color: transparent !important;
-  border: none !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+.generating-pdf .bg-white {
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 /* Ensure page breaks don't cut off content */
 .prose section {
-  page-break-inside: auto;
-  break-inside: auto;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   display: block;
   width: 100%;
-}
-
-/* Allow long sections to break if they exceed one page */
-.prose .allow-break {
-  page-break-inside: auto !important;
-  break-inside: auto !important;
 }
 
 .prose p, .prose li {
   page-break-inside: auto;
   break-inside: auto;
-  orphans: 3;
-  widows: 3;
 }
 
 .prose tr {
@@ -130,9 +117,9 @@
   break-after: avoid;
   page-break-inside: avoid;
   break-inside: avoid;
-  color: #000 !important;
-  margin-top: 1.2rem !important;
-  margin-bottom: 0.8rem !important;
+  color: #0f172a !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
 }
 
 .page-header-container {
@@ -145,38 +132,38 @@
 /* Typography Overrides for PDF */
 .prose {
   font-size: 12pt !important;
-  line-height: 1.5 !important;
-  text-align: justify;
-  --tw-prose-body: #000;
-  --tw-prose-headings: #000;
-  --tw-prose-bold: #000;
+  line-height: 1.6 !important;
+  text-align: left;
+  --tw-prose-body: #334155;
+  --tw-prose-headings: #0f172a;
+  --tw-prose-bold: #0f172a;
 }
 
 .prose table {
   width: 100% !important;
   border-collapse: collapse !important;
   margin-bottom: 1rem !important;
-  table-layout: auto !important;
+  table-layout: fixed !important;
 }
 
 .prose th, .prose td {
-  border: 1px solid #000 !important;
-  padding: 6px !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 8px !important;
   text-align: left !important;
   word-wrap: break-word !important;
 }
 
 /* Fix PDF list alignment */
 .prose ol, .prose ul {
-  padding-left: 1.2rem !important;
+  padding-left: 1.5rem !important;
   margin-left: 0 !important;
   list-style-position: outside !important;
 }
 
 .prose li {
   display: list-item !important;
-  padding-left: 0.3rem !important;
-  margin-bottom: 0.2rem !important;
+  padding-left: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .prose li > p {

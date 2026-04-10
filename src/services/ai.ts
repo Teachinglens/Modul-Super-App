@@ -15,29 +15,38 @@ if (apiKey) {
 
 // Helper to extract JSON from a string that might contain extra text
 const extractJson = (text: string) => {
+  const cleanedText = text.trim();
   try {
     // Try direct parse first
-    return JSON.parse(text);
+    return JSON.parse(cleanedText);
   } catch (e) {
-    // Try to find JSON block
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
-    
-    if (start !== -1 && end !== -1 && end > start) {
-      const jsonStr = text.substring(start, end + 1);
+    // Find first and last possible JSON markers
+    const firstBrace = cleanedText.indexOf('{');
+    const lastBrace = cleanedText.lastIndexOf('}');
+    const firstBracket = cleanedText.indexOf('[');
+    const lastBracket = cleanedText.lastIndexOf(']');
+
+    // Try array first if it starts before object or no object exists
+    if (firstBracket !== -1 && lastBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
       try {
-        return JSON.parse(jsonStr);
-      } catch (innerError) {
-        // If it's an array
-        const startArr = text.indexOf('[');
-        const endArr = text.lastIndexOf(']');
-        if (startArr !== -1 && endArr !== -1 && endArr > startArr) {
-          const jsonArrStr = text.substring(startArr, endArr + 1);
-          return JSON.parse(jsonArrStr);
-        }
-        throw innerError;
-      }
+        return JSON.parse(cleanedText.substring(firstBracket, lastBracket + 1));
+      } catch (err) { /* ignore and try object */ }
     }
+
+    // Try object
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      try {
+        return JSON.parse(cleanedText.substring(firstBrace, lastBrace + 1));
+      } catch (err) { /* ignore */ }
+    }
+
+    // Try array again as fallback if we haven't successfully parsed yet
+    if (firstBracket !== -1 && lastBracket !== -1) {
+      try {
+        return JSON.parse(cleanedText.substring(firstBracket, lastBracket + 1));
+      } catch (err) { /* ignore */ }
+    }
+    
     throw e;
   }
 };
@@ -137,7 +146,9 @@ const callAi = async (params: any, retries = 3) => {
 
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
   const model = "gemini-3-flash-preview";
-  const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. Berikan dalam format JSON array of strings.`;
+  const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. 
+PENTING: Berikan HANYA format JSON array of strings, tanpa teks penjelasan lain.
+Contoh: ["Topik 1", "Topik 2"]`;
   
   try {
     const response = await callAi({
@@ -171,7 +182,8 @@ export const suggestObjectives = async (
   const prompt = `Berikan 3 saran Tujuan Pembelajaran (TP) yang sesuai dengan kaidah ABCD (Audience, Behavior, Condition, Degree) untuk mata pelajaran ${subject}, topik ${topic}, jenjang ${level} Fase ${phase}. 
 Gunakan Model Pembelajaran: ${learningModel}.
 ${loveContext}
-Berikan dalam format JSON array of strings.`;
+PENTING: Berikan HANYA format JSON array of strings, tanpa teks penjelasan lain.
+Contoh: ["TP 1", "TP 2"]`;
   
   try {
     const response = await callAi({
@@ -195,7 +207,7 @@ export const generateModulAjar = async (data: ModuleData) => {
   const prompt = `
 Tugas: Buatlah Modul Ajar Kurikulum Merdeka yang SISTEMATIS, LOGIS, dan PROFESIONAL.
 Bahasa: Indonesia (Kaidah Guru Profesional).
-PENTING: JANGAN sertakan Judul BAB atau Nomor BAB (seperti "I. PROFIL PELAJAR PANCASILA", "II. SARANA PRASARANA", dll) dalam isi konten JSON, karena judul sudah ada di template UI. Langsung berikan isi kontennya saja.
+PENTING: Berikan HANYA format JSON yang valid. JANGAN sertakan teks penjelasan di luar JSON. JANGAN sertakan Judul BAB atau Nomor BAB (seperti "I. PROFIL PELAJAR PANCASILA", "II. SARANA PRASARANA", dll) dalam isi konten JSON, karena judul sudah ada di template UI. Langsung berikan isi kontennya saja.
 
 DATA INPUT:
 - Nama Guru: ${data.teacherName}
