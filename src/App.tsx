@@ -2026,15 +2026,12 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   </div>
 
                   {generatedModule.lkpd && (
-                    <>
-                      <div className="html2pdf__page-break"></div>
-                      <section className="mt-8 pt-8 border-t-2 border-slate-200">
-                        <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
-                        <div className="bg-white p-4 rounded-lg border border-slate-100">
-                          <MarkdownRenderer>{generatedModule.lkpd}</MarkdownRenderer>
-                        </div>
-                      </section>
-                    </>
+                    <section className="mt-16 pt-8 border-t-2 border-slate-200 html2pdf__page-break">
+                      <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
+                      <div className="bg-white p-4 rounded-lg border border-slate-100">
+                        <MarkdownRenderer>{generatedModule.lkpd}</MarkdownRenderer>
+                      </div>
+                    </section>
                   )}
                 </div>
               </div>
