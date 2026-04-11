@@ -233,7 +233,8 @@
   display: block !important;
 }
 
-.force-page-break {
+.force-page-break,
+.html2pdf__page-break {
   page-break-before: always !important;
   break-before: page !important;
   display: block !important;

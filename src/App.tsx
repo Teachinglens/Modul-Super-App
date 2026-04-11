@@ -1101,7 +1101,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     element.classList.add("generating-pdf");
     
     // Small delay to ensure styles are applied before capturing
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     try {
       console.log("Starting PDF generation with html2pdf...");
@@ -1121,7 +1121,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
           width: 605 // Force width to match 160mm at 96dpi for consistency
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy'] as any }
+        pagebreak: { mode: ['css', 'legacy', 'avoid-all'] as any }
       };
 
       // Use html2pdf for better page break handling and layout
@@ -2010,15 +2010,13 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                         <tr>
                           <td className="w-1/2 text-center align-top !border-none">
                             <p className="m-0">Mengetahui,</p>
-                            <p className="m-0">Kepala Sekolah</p>
-                            <div style={{ height: '80px', minHeight: '80px', display: 'block', width: '100%' }}></div> {/* Spacer for signature */}
+                            <p className="m-0 pb-[100px]">Kepala Sekolah</p>
                             <p className="font-bold underline m-0 signature-name">{formData.principalName || "................................................"}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.principalNip || "................................................"}</p>
                           </td>
                           <td className="w-1/2 text-center align-top !border-none">
                             <p className="m-0">{formData.location}, {formData.date}</p>
-                            <p className="m-0">Guru Mata Pelajaran</p>
-                            <div style={{ height: '80px', minHeight: '80px', display: 'block', width: '100%' }}></div> {/* Spacer for signature */}
+                            <p className="m-0 pb-[100px]">Guru Mata Pelajaran</p>
                             <p className="font-bold underline m-0 signature-name">{formData.teacherName}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.nip || "-"}</p>
                           </td>
@@ -2028,7 +2026,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   </div>
 
                   {generatedModule.lkpd && (
-                    <section className="mt-16 pt-8 border-t-2 border-slate-200 force-page-break">
+                    <section className="mt-16 pt-8 border-t-2 border-slate-200 html2pdf__page-break">
                       <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
                       <div className="bg-white p-4 rounded-lg border border-slate-100">
                         <MarkdownRenderer>{generatedModule.lkpd}</MarkdownRenderer>
