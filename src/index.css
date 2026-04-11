@@ -128,6 +128,14 @@
   margin-bottom: 1rem !important;
 }
 
+/* Ensure headers don't end up at the bottom of a page */
+.prose h1 + p, .prose h2 + p, .prose h3 + p,
+.prose h1 + ul, .prose h2 + ul, .prose h3 + ul,
+.prose h1 + ol, .prose h2 + ol, .prose h3 + ol {
+  page-break-before: avoid;
+  break-before: avoid;
+}
+
 /* Add the blue accent border to section headers */
 .prose h3 {
   border-left: 6px solid #2563eb !important;
@@ -151,9 +159,11 @@
 .prose {
   font-size: 11.5pt !important;
   line-height: 1.6 !important;
-  text-align: left;
+  text-align: justify; /* Better for professional documents */
   color: #1e293b !important;
   font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
   --tw-prose-body: #1e293b;
   --tw-prose-headings: #0f172a;
   --tw-prose-bold: #0f172a;
@@ -163,14 +173,16 @@
   width: 100% !important;
   border-collapse: collapse !important;
   margin-bottom: 1.5rem !important;
-  table-layout: auto !important;
+  table-layout: fixed !important; /* Prevents tables from expanding beyond container */
 }
 
 .prose th, .prose td {
   border: 1px solid #cbd5e1 !important;
-  padding: 10px !important;
+  padding: 8px !important;
   text-align: left !important;
   word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  vertical-align: top !important;
 }
 
 /* Identity Table - Force NO borders */

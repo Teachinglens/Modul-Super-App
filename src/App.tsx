@@ -1098,10 +1098,17 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
     }
     
     setIsDownloading(true);
+    
+    // Ensure we are at the top of the page for clean capture
+    window.scrollTo(0, 0);
+    
     element.classList.add("generating-pdf");
     
-    // Small delay to ensure styles are applied before capturing
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait for fonts and images to be fully ready
+    await document.fonts.ready;
+    
+    // Wait for a bit longer to ensure layout has settled and all styles are applied
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     try {
       console.log("Starting PDF generation with html2pdf...");
@@ -1111,17 +1118,36 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
       const opt = {
         margin: [25, 25, 25, 25] as [number, number, number, number],
         filename: fileName,
-        image: { type: 'jpeg' as const, quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 1.0 },
         html2canvas: { 
           scale: 2, 
           useCORS: true, 
           letterRendering: true,
           backgroundColor: '#ffffff',
           logging: false,
-          width: 605 // Force width to match 160mm at 96dpi for consistency
+          width: 605, // 160mm at 96dpi
+          windowWidth: 605,
+          onclone: (clonedDoc: Document) => {
+            const el = clonedDoc.getElementById('module-content');
+            if (el) {
+              el.style.width = '160mm';
+              el.style.padding = '0';
+              el.style.margin = '0';
+              el.style.boxShadow = 'none';
+              el.style.border = 'none';
+              el.style.paddingBottom = '20px'; // Prevent bottom cut-off
+              
+              // Ensure all tables inside are properly sized
+              const tables = el.querySelectorAll('table');
+              tables.forEach(table => {
+                (table as HTMLElement).style.width = '100%';
+                (table as HTMLElement).style.tableLayout = 'fixed';
+              });
+            }
+          }
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy', 'avoid-all'] as any }
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const, compress: true },
+        pagebreak: { mode: ['css', 'legacy'] as any }
       };
 
       // Use html2pdf for better page break handling and layout
