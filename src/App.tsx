@@ -2011,14 +2011,14 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                           <td className="w-1/2 text-center align-top !border-none">
                             <p className="m-0">Mengetahui,</p>
                             <p className="m-0">Kepala Sekolah</p>
-                            <div className="h-24 block w-full"></div> {/* Spacer for signature */}
+                            <div style={{ height: '80px', minHeight: '80px', display: 'block', width: '100%' }}></div> {/* Spacer for signature */}
                             <p className="font-bold underline m-0 signature-name">{formData.principalName || "................................................"}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.principalNip || "................................................"}</p>
                           </td>
                           <td className="w-1/2 text-center align-top !border-none">
                             <p className="m-0">{formData.location}, {formData.date}</p>
                             <p className="m-0">Guru Mata Pelajaran</p>
-                            <div className="h-24 block w-full"></div> {/* Spacer for signature */}
+                            <div style={{ height: '80px', minHeight: '80px', display: 'block', width: '100%' }}></div> {/* Spacer for signature */}
                             <p className="font-bold underline m-0 signature-name">{formData.teacherName}</p>
                             <p className="m-0 text-sm signature-nip">NIP. {formData.nip || "-"}</p>
                           </td>
@@ -2028,7 +2028,7 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   </div>
 
                   {generatedModule.lkpd && (
-                    <section className="mt-16 pt-8 border-t-2 border-slate-200 allow-break">
+                    <section className="mt-16 pt-8 border-t-2 border-slate-200 force-page-break">
                       <h3 className="text-xl font-bold border-l-4 border-blue-600 pl-3 mb-4">XIII. LAMPIRAN LKPD</h3>
                       <div className="bg-white p-4 rounded-lg border border-slate-100">
                         <MarkdownRenderer>{generatedModule.lkpd}</MarkdownRenderer>
