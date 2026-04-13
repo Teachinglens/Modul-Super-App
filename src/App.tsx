@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User, ModuleData, GeneratedModule } from "./types";
-import { LogIn, LayoutDashboard, FilePlus, Settings, LogOut, FileText, Download, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronLeft, Menu, X, Users, UserPlus, Edit, Trash2, Lock, Unlock, Github, BookOpen } from "lucide-react";
+import { LogIn, LayoutDashboard, FilePlus, Settings, LogOut, FileText, Download, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronLeft, Menu, X, Users, UserPlus, Edit, Trash2, Lock, Unlock, Github, BookOpen, Lightbulb, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateModulAjar, suggestTopics, suggestObjectives } from "./services/ai";
 import ReactMarkdown from "react-markdown";
@@ -1253,6 +1253,30 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
             )}
           </nav>
         </div>
+
+        {/* AI Usage Tips Card */}
+        <div className="px-6 mb-4">
+          <div className="bg-blue-600 rounded-xl p-4 shadow-md">
+            <div className="flex items-center gap-2 text-white mb-2">
+              <Lightbulb className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Tips Saran AI</span>
+            </div>
+            <ul className="space-y-2">
+              <li className="flex gap-2 text-[10px] text-blue-50 leading-relaxed">
+                <span className="text-white font-bold">•</span>
+                <span>Jika kuota habis, tunggu 1-2 menit.</span>
+              </li>
+              <li className="flex gap-2 text-[10px] text-blue-50 leading-relaxed">
+                <span className="text-white font-bold">•</span>
+                <span>Klik tombol saran 1x saja.</span>
+              </li>
+              <li className="flex gap-2 text-[10px] text-blue-50 leading-relaxed">
+                <span className="text-white font-bold">•</span>
+                <span>Lengkapi Mapel agar AI akurat.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
         
         <div className="mt-auto p-6 border-t border-slate-100">
           <div className="flex items-center gap-3 mb-4">
@@ -1350,6 +1374,17 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                   <h2 className="text-3xl font-bold text-slate-800">Input Data Guru & Mapel</h2>
                   <p className="text-slate-500 mt-2">Lengkapi data dasar untuk memulai penyusunan modul.</p>
                 </header>
+
+                {/* AI Tips at the top of Input tab */}
+                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-4 shadow-sm">
+                  <Info className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-blue-800">Tips Penggunaan AI</h4>
+                    <p className="text-[10px] text-blue-700 mt-1 leading-relaxed">
+                      Gunakan fitur <b>"Saran AI"</b> di tahap Administrasi untuk mendapatkan ide topik dan tujuan pembelajaran secara otomatis. Jika muncul pesan kuota habis, cukup tunggu 1 menit sebelum mencoba lagi.
+                    </p>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                   <div className="space-y-2">
@@ -1826,6 +1861,16 @@ const Dashboard = ({ user: initialUser, onLogout }: { user: User; onLogout: () =
                       ))}
                     </div>
                     {formData.characters.length === 0 && <p className="text-[10px] text-red-500 font-bold mt-1">data harus diisi</p>}
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-4">
+                  <Lightbulb className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-amber-800">Tips Generate AI</h4>
+                    <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
+                      Proses generate modul membutuhkan waktu sekitar 30-60 detik. Jika muncul pesan "Kuota Habis", mohon tunggu 1 menit lalu klik tombol di bawah ini kembali. Pastikan internet Anda stabil.
+                    </p>
                   </div>
                 </div>
 
