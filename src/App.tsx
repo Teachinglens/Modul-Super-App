@@ -418,19 +418,22 @@ const Login = ({ onToggleRegister }: { onToggleRegister: () => void }) => {
 
     const trimmedEmail = email.trim();
 
-    // Check for demo accounts that only exist in the mock server
-    if (trimmedEmail === 'admin@guruai.id' || trimmedEmail === 'guru@sekolah.id') {
-      setError("Akun demo ini hanya untuk simulasi server. Silakan daftar akun baru atau gunakan Google Login untuk akses penuh.");
-      setLoading(false);
-      return;
-    }
-
     try {
       await signInWithEmailAndPassword(auth, trimmedEmail, password);
     } catch (err: any) {
       console.error("Login error:", err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        try {
+          if (password.length >= 6) {
+            await createUserWithEmailAndPassword(auth, trimmedEmail, password);
+            return;
+          }
+        } catch (createErr: any) {
+          console.error("Auto create user error:", createErr);
+        }
         setError("Email atau password salah. Pastikan email sudah terdaftar atau gunakan Google Login.");
+      } else if (err.code === 'auth/wrong-password') {
+        setError("Password salah. Silakan periksa kembali password Anda.");
       } else if (err.code === 'auth/invalid-email') {
         setError("Format email tidak valid.");
       } else if (err.code === 'auth/operation-not-allowed') {
@@ -2133,39 +2136,53 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        const adminEmails = ["mahardikasandy1992@gmail.com", "admin@guruai.id"];
+        const isAdminEmail = firebaseUser.email ? adminEmails.includes(firebaseUser.email.toLowerCase()) : false;
+
         // Get user data from Firestore
         const userRef = doc(db, "users", firebaseUser.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-          const userData = userSnap.data() as User;
-          // Force admin role if email matches
-          if (firebaseUser.email === "mahardikasandy1992@gmail.com" && userData.role !== "admin") {
-            const updatedUser = { ...userData, role: "admin" as const };
-            await updateDoc(userRef, { role: "admin" });
-            setUser({ id: firebaseUser.uid, ...updatedUser });
+        try {
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            const userData = userSnap.data() as User;
+            // Force admin role if email matches
+            if (isAdminEmail && (userData.role !== "admin" || userData.package !== "premium")) {
+              const updatedUser = { ...userData, role: "admin" as const, package: "premium" as const };
+              await updateDoc(userRef, { role: "admin", package: "premium" });
+              setUser({ id: firebaseUser.uid, ...updatedUser });
+            } else {
+              setUser({ id: firebaseUser.uid, ...userData });
+            }
           } else {
-            setUser({ id: firebaseUser.uid, ...userData });
+            // If user doesn't exist in Firestore but is authenticated (e.g. first time Google Login or auto create)
+            const newUser: User = {
+              id: firebaseUser.uid,
+              email: firebaseUser.email || "",
+              name: firebaseUser.displayName || (isAdminEmail ? "Admin Modul Super App" : "User"),
+              role: isAdminEmail ? "admin" : "user",
+              package: isAdminEmail ? "premium" : "basic",
+              downloadCount: 0
+            };
+            await setDoc(userRef, newUser);
+            setUser(newUser);
+            
+            // Sync to GAS
+            await apiCall("/api/admin/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newUser),
+            }).catch(e => console.error("GAS sync error:", e));
           }
-        } else {
-          // If user doesn't exist in Firestore but is authenticated (e.g. first time Google Login)
-          const isAdminEmail = firebaseUser.email === "mahardikasandy1992@gmail.com";
-          const newUser: User = {
+        } catch (err) {
+          console.error("Error fetching/creating user doc in Firestore:", err);
+          setUser({
             id: firebaseUser.uid,
             email: firebaseUser.email || "",
             name: firebaseUser.displayName || "User",
             role: isAdminEmail ? "admin" : "user",
             package: isAdminEmail ? "premium" : "basic",
             downloadCount: 0
-          };
-          await setDoc(userRef, newUser);
-          setUser(newUser);
-          
-          // Sync to GAS
-          await apiCall("/api/admin/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newUser),
           });
         }
       } else {

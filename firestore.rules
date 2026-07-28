@@ -46,8 +46,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "mahardikasandy1992@gmail.com" && request.auth.token.email_verified == true));
+        (request.auth.token.email in ["mahardikasandy1992@gmail.com", "admin@guruai.id"] ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isValidEmail(email) {
@@ -93,13 +94,16 @@ service cloud.firestore {
       // Users can read their own profile. Admins can read any profile.
       allow read: if isOwner(userId) || isAdmin();
 
-      // Users can create their own profile as 'user' role. Admins can create any profile.
+      // Users can create their own profile. Admins can create any profile.
       allow create: if isAuthenticated() && isValidUser(request.resource.data) &&
-        ((isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role == 'user')) || isAdmin());
+        (isOwner(userId) || isAdmin());
 
       // Users can update their own profile but NOT their role. Admins can update anything.
       allow update: if isAuthenticated() && isValidUser(request.resource.data) &&
         ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+
+      // Admins can delete users
+      allow delete: if isAdmin();
     }
 
     match /modules/{moduleId} {
