@@ -36,16 +36,41 @@ app.post("/api/ai/generate", async (req, res) => {
   }
 
   const { model, contents, config } = req.body;
+  // Use valid production models; avoid deprecated/inaccessible preview model aliases
+  const targetModel = (model && model !== "gemini-3-flash-preview") ? model : "gemini-3.6-flash";
+
   try {
     const { GoogleGenAI } = await import("@google/genai");
-    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-    
-    // Use the correct Gemini 3 SDK pattern
-    const response = await ai.models.generateContent({
-      model: model || "gemini-3-flash-preview",
-      contents: contents,
-      config: config
+    const ai = new GoogleGenAI({ 
+      apiKey: geminiApiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
     });
+    
+    let response: any = null;
+    try {
+      response = await ai.models.generateContent({
+        model: targetModel,
+        contents: contents,
+        config: config
+      });
+    } catch (modelErr: any) {
+      console.warn(`Primary model ${targetModel} error:`, modelErr.message || modelErr);
+      // If error is 404, 403, or temporary, attempt fallback to gemini-flash-latest
+      if (targetModel !== "gemini-flash-latest") {
+        console.log("Attempting fallback to gemini-flash-latest...");
+        response = await ai.models.generateContent({
+          model: "gemini-flash-latest",
+          contents: contents,
+          config: config
+        });
+      } else {
+        throw modelErr;
+      }
+    }
     
     if (!response || !response.text) {
       throw new Error("Gemini returned an empty response.");
@@ -55,18 +80,22 @@ app.post("/api/ai/generate", async (req, res) => {
   } catch (err: any) {
     console.error("Gemini API Error:", err);
     
-    // Provide more specific error messages
-    let errorMessage = err.message || "Failed to generate content from Gemini";
+    // Provide more specific, actionable error messages
+    let errorMessage = err.message || "Gagal menghasilkan konten dari AI Gemini.";
     let statusCode = 500;
 
-    if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("400")) {
-      errorMessage = "GEMINI_API_KEY tidak valid atau tidak memiliki akses ke model ini. Silakan periksa kembali API Key Anda di Dashboard Vercel/Settings.";
-    } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
-      errorMessage = "Kuota API Gemini telah habis. Silakan coba lagi nanti.";
+    if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("RESOURCE_EXHAUSTED")) {
+      errorMessage = "Kuota API Gemini telah habis atau mencapai batas limit saat ini. Silakan coba lagi nanti.";
       statusCode = 429;
     } else if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("UNAVAILABLE")) {
       errorMessage = "Server AI sedang mengalami beban tinggi (High Demand). Silakan coba lagi dalam beberapa saat.";
       statusCode = 503;
+    } else if (errorMessage.includes("PERMISSION_DENIED") || errorMessage.includes("403")) {
+      errorMessage = "Akses API Gemini ditolak (403 Permission Denied). Periksa konfigurasi API key Anda.";
+      statusCode = 403;
+    } else if (errorMessage.includes("API_KEY_INVALID") || errorMessage.includes("API key not valid")) {
+      errorMessage = "GEMINI_API_KEY tidak valid. Silakan periksa kembali API Key Anda di Dashboard Settings.";
+      statusCode = 401;
     }
     
     res.status(statusCode).json({ success: false, message: errorMessage });

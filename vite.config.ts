@@ -68,9 +68,6 @@ export default defineConfig(({mode}) => {
       isGas && removeModuleTypePlugin(), 
       isGas && injectCdnPlugin()
     ].filter(Boolean),
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
     build: {
       minify: true,
       chunkSizeWarningLimit: 2000,

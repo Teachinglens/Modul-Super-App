@@ -1,21 +1,14 @@
-import { GoogleGenAI } from "@google/genai";
 import { ModuleData } from "../types";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
-
-// Initialize AI client for frontend use if key is available
-let frontendAi: any = null;
-if (apiKey) {
-  try {
-    frontendAi = new GoogleGenAI({ apiKey: apiKey.trim() });
-  } catch (e) {
-    console.error("Failed to initialize frontend AI:", e);
-  }
-}
-
-// Helper to extract JSON from a string that might contain extra text
+// Helper to extract JSON from a string that might contain extra text or markdown fences
 const extractJson = (text: string) => {
-  const cleanedText = text.trim();
+  let cleanedText = text.trim();
+  
+  // Remove markdown code fence if present
+  if (cleanedText.startsWith("```")) {
+    cleanedText = cleanedText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  }
+
   try {
     // Try direct parse first
     return JSON.parse(cleanedText);
@@ -51,61 +44,38 @@ const extractJson = (text: string) => {
   }
 };
 
-// Helper to call AI via proxy or directly with retry logic
-const callAi = async (params: any, retries = 3) => {
+// Helper to call AI via backend server proxy with retry logic
+const callAi = async (params: { model?: string; contents: string; config?: any }, retries = 3) => {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   
+  // Default to gemini-3.6-flash
+  const payload = {
+    model: params.model || "gemini-3.6-flash",
+    contents: params.contents,
+    config: params.config
+  };
+
   for (let i = 0; i < retries; i++) {
     try {
-      // 1. Try direct frontend call first if key is available (Recommended by SKILL.md)
-      if (frontendAi) {
-        try {
-          const response = await frontendAi.models.generateContent({
-            model: params.model || "gemini-3-flash-preview",
-            contents: params.contents,
-            config: params.config
-          });
-          if (response && response.text) {
-            return { success: true, text: response.text };
-          }
-        } catch (e: any) {
-          console.warn(`Direct frontend AI call attempt ${i + 1} failed:`, e.message);
-          
-          // If it's a 503 or 429, we should retry
-          const isRetryable = e.message.includes("503") || e.message.includes("429") || e.message.includes("high demand");
-          
-          if (isRetryable && i < retries - 1) {
-            await delay(Math.pow(2, i) * 1000);
-            continue;
-          }
-
-          // If it's an auth error, we might want to try the proxy which might have a different key
-          if (!e.message.includes("API_KEY_INVALID") && !e.message.includes("400") && !isRetryable) {
-            throw e;
-          }
-        }
-      }
-
-      // 2. If we are in GAS environment, we MUST use direct client-side call
+      // 1. Google Apps Script client environment check (only if inside GAS iframe)
       // @ts-ignore
-      const isGas = typeof google !== 'undefined' && google.script && google.script.run;
-      
+      const isGas = typeof google !== 'undefined' && google?.script?.run;
       if (isGas) {
-        if (!apiKey) throw new Error("GEMINI_API_KEY tidak ditemukan. Pastikan sudah diatur di Script Properties.");
-        const ai = new GoogleGenAI({ apiKey: apiKey.trim() });
-        const response = await ai.models.generateContent({
-          model: params.model || "gemini-3-flash-preview",
-          contents: params.contents,
-          config: params.config
+        // In standalone GAS HTML export, call GAS server script if available
+        return await new Promise<{ success: boolean; text: string }>((resolve, reject) => {
+          // @ts-ignore
+          google.script.run
+            .withSuccessHandler((text: string) => resolve({ success: true, text }))
+            .withFailureHandler((err: any) => reject(new Error(err?.message || "GAS AI call failed")))
+            .generateContentFromGas(payload);
         });
-        return { success: true, text: response.text };
       }
 
-      // 3. Otherwise, use server proxy (e.g. on Vercel)
+      // 2. Standard Web & AI Studio environment: Use server-side proxy
       const response = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -113,31 +83,33 @@ const callAi = async (params: any, retries = 3) => {
         try {
           const errorData = await response.json();
           errorMsg = errorData.message || errorMsg;
-        } catch (e) {}
+        } catch (e) {
+          // Fallback to text
+          try {
+            const text = await response.text();
+            if (text) errorMsg = text;
+          } catch (_) {}
+        }
         
-        // If it's a 503 or 429 from proxy, retry
-        if ((response.status === 503 || response.status === 429 || errorMsg.includes("high demand")) && i < retries - 1) {
+        // If it's a 503 or 429 from proxy, retry with exponential backoff
+        const isRetryable = response.status === 503 || response.status === 429 || errorMsg.includes("high demand") || errorMsg.includes("RESOURCE_EXHAUSTED");
+        if (isRetryable && i < retries - 1) {
           await delay(Math.pow(2, i) * 1000);
           continue;
-        }
-
-        // Add helpful context for common errors
-        if (response.status === 500 && errorMsg.includes("GEMINI_API_KEY")) {
-          // Detailed instructions already in errorMsg
-        }
-        
-        if (response.status === 503 || errorMsg.includes("high demand")) {
-          errorMsg = "Server AI sedang sibuk (High Demand). Silakan coba klik tombol Saran AI lagi dalam beberapa detik.";
         }
         
         throw new Error(errorMsg);
       }
 
       const data = await response.json();
-      if (!data.success) throw new Error(data.message || "AI Proxy Error");
+      if (!data.success) {
+        throw new Error(data.message || "Gagal mendapatkan respon dari AI");
+      }
       return data;
     } catch (error: any) {
-      if (i === retries - 1) throw error;
+      if (i === retries - 1) {
+        throw error;
+      }
       await delay(Math.pow(2, i) * 1000);
     }
   }
@@ -145,7 +117,7 @@ const callAi = async (params: any, retries = 3) => {
 };
 
 export const suggestTopics = async (subject: string, level: string, phase: string) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.6-flash";
   const prompt = `Berikan 5 saran materi pokok (topik) yang spesifik untuk mata pelajaran ${subject} di jenjang ${level} Fase ${phase} sesuai Kurikulum Merdeka. 
 PENTING: Berikan HANYA format JSON array of strings, tanpa teks penjelasan lain.
 Contoh: ["Topik 1", "Topik 2"]`;
@@ -174,7 +146,7 @@ export const suggestObjectives = async (
   learningModel: string,
   applyLoveCurriculum: boolean
 ) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.6-flash";
   const loveContext = applyLoveCurriculum 
     ? "Sertakan juga pendekatan Kurikulum Berbasis Cinta (nilai kasih sayang, empati, humanis)." 
     : "";
@@ -202,7 +174,7 @@ Contoh: ["TP 1", "TP 2"]`;
 };
 
 export const generateModulAjar = async (data: ModuleData) => {
-  const model = "gemini-3-flash-preview";
+  const model = "gemini-3.6-flash";
   
   const prompt = `
 Tugas: Buatlah Modul Ajar Kurikulum Merdeka yang SISTEMATIS, LOGIS, dan PROFESIONAL.
@@ -282,3 +254,4 @@ FORMAT OUTPUT: JSON STRICT (Hanya JSON, tanpa teks lain)
     throw error;
   }
 };
+
